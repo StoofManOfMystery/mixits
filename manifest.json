@@ -2,7 +2,7 @@
   "name": "My Cocktail Bar",
   "short_name": "Cocktails",
   "description": "Track your bar ingredients and discover cocktails you can make",
-  "start_url": "/",
+  "start_url": "/mixits/",
   "display": "standalone",
   "background_color": "#7c3aed",
   "theme_color": "#7c3aed",
