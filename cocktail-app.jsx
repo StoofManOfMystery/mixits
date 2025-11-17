@@ -1,0 +1,773 @@
+import React, { useState, useEffect } from 'react';
+import { Plus, X, Wine, Search, Check } from 'lucide-react';
+
+// Comprehensive cocktail database
+const COCKTAIL_DATABASE = [
+  {
+    name: "Margarita",
+    ingredients: ["tequila", "lime juice", "triple sec", "salt"],
+    optional: ["agave syrup"],
+    instructions: "Rub lime around rim and dip in salt. Shake tequila, lime juice, and triple sec with ice. Strain into glass."
+  },
+  {
+    name: "Mojito",
+    ingredients: ["white rum", "lime juice", "mint", "sugar", "soda water"],
+    instructions: "Muddle mint with sugar and lime juice. Add rum and ice. Top with soda water."
+  },
+  {
+    name: "Old Fashioned",
+    ingredients: ["bourbon", "sugar", "bitters"],
+    optional: ["orange peel"],
+    instructions: "Muddle sugar with bitters. Add bourbon and ice. Stir. Garnish with orange peel."
+  },
+  {
+    name: "Martini",
+    ingredients: ["gin", "dry vermouth"],
+    optional: ["olive", "lemon twist"],
+    instructions: "Stir gin and vermouth with ice. Strain into chilled glass. Garnish with olive or lemon twist."
+  },
+  {
+    name: "Manhattan",
+    ingredients: ["whiskey", "sweet vermouth", "bitters"],
+    optional: ["cherry"],
+    instructions: "Stir whiskey, vermouth, and bitters with ice. Strain into glass. Garnish with cherry."
+  },
+  {
+    name: "Daiquiri",
+    ingredients: ["white rum", "lime juice", "sugar"],
+    instructions: "Shake rum, lime juice, and sugar with ice. Strain into chilled glass."
+  },
+  {
+    name: "Cosmopolitan",
+    ingredients: ["vodka", "triple sec", "lime juice", "cranberry juice"],
+    instructions: "Shake all ingredients with ice. Strain into chilled martini glass."
+  },
+  {
+    name: "Moscow Mule",
+    ingredients: ["vodka", "ginger beer", "lime juice"],
+    instructions: "Fill copper mug with ice. Add vodka and lime juice. Top with ginger beer."
+  },
+  {
+    name: "Whiskey Sour",
+    ingredients: ["whiskey", "lemon juice", "sugar"],
+    optional: ["egg white", "cherry"],
+    instructions: "Shake whiskey, lemon juice, and sugar with ice. Strain into glass."
+  },
+  {
+    name: "Negroni",
+    ingredients: ["gin", "campari", "sweet vermouth"],
+    optional: ["orange peel"],
+    instructions: "Stir equal parts gin, Campari, and vermouth with ice. Strain into glass with ice."
+  },
+  {
+    name: "Gin and Tonic",
+    ingredients: ["gin", "tonic water"],
+    optional: ["lime"],
+    instructions: "Fill glass with ice. Add gin and top with tonic water. Garnish with lime."
+  },
+  {
+    name: "Rum and Coke",
+    ingredients: ["rum", "cola"],
+    optional: ["lime"],
+    instructions: "Fill glass with ice. Add rum and top with cola. Squeeze lime wedge."
+  },
+  {
+    name: "Piña Colada",
+    ingredients: ["white rum", "coconut cream", "pineapple juice"],
+    instructions: "Blend rum, coconut cream, and pineapple juice with ice until smooth."
+  },
+  {
+    name: "Bloody Mary",
+    ingredients: ["vodka", "tomato juice", "lemon juice", "worcestershire sauce", "hot sauce", "salt", "pepper"],
+    optional: ["celery"],
+    instructions: "Combine all ingredients in glass with ice. Stir well. Garnish with celery."
+  },
+  {
+    name: "Aperol Spritz",
+    ingredients: ["aperol", "prosecco", "soda water"],
+    optional: ["orange"],
+    instructions: "Fill glass with ice. Add Aperol, prosecco, and splash of soda. Garnish with orange slice."
+  },
+  {
+    name: "Mai Tai",
+    ingredients: ["white rum", "dark rum", "orange curacao", "lime juice", "orgeat syrup"],
+    instructions: "Shake white rum, curacao, lime juice, and orgeat with ice. Pour into glass and float dark rum on top."
+  },
+  {
+    name: "Espresso Martini",
+    ingredients: ["vodka", "coffee liqueur", "espresso", "sugar"],
+    instructions: "Shake vodka, coffee liqueur, espresso, and sugar with ice. Strain into chilled martini glass."
+  },
+  {
+    name: "Tom Collins",
+    ingredients: ["gin", "lemon juice", "sugar", "soda water"],
+    optional: ["cherry", "lemon"],
+    instructions: "Shake gin, lemon juice, and sugar with ice. Strain into glass with ice and top with soda water."
+  },
+  {
+    name: "Paloma",
+    ingredients: ["tequila", "grapefruit soda", "lime juice", "salt"],
+    instructions: "Rim glass with salt. Fill with ice, add tequila and lime juice. Top with grapefruit soda."
+  },
+  {
+    name: "Irish Coffee",
+    ingredients: ["irish whiskey", "coffee", "sugar", "cream"],
+    instructions: "Add whiskey and sugar to hot coffee. Stir. Top with lightly whipped cream."
+  },
+  {
+    name: "Blue Lagoon",
+    ingredients: ["vodka", "blue curacao", "lemonade"],
+    optional: ["lemon", "cherry"],
+    instructions: "Fill glass with ice. Add vodka and blue curacao. Top with lemonade. Garnish with lemon and cherry."
+  },
+  {
+    name: "Blue Hawaiian",
+    ingredients: ["white rum", "blue curacao", "pineapple juice", "coconut cream"],
+    instructions: "Blend rum, blue curacao, pineapple juice, and coconut cream with ice until smooth."
+  },
+  {
+    name: "Electric Lemonade",
+    ingredients: ["vodka", "blue curacao", "lemonade", "sprite"],
+    instructions: "Fill glass with ice. Add vodka and blue curacao. Add lemonade and top with Sprite."
+  },
+  {
+    name: "Swimming Pool",
+    ingredients: ["vodka", "blue curacao", "coconut cream", "pineapple juice", "cream"],
+    instructions: "Blend vodka, pineapple juice, and coconut cream with ice. Pour blue curacao in center, add cream on top."
+  },
+  {
+    name: "Blue Margarita",
+    ingredients: ["tequila", "blue curacao", "lime juice", "salt"],
+    instructions: "Rim glass with salt. Shake tequila, blue curacao, and lime juice with ice. Strain into glass."
+  },
+  {
+    name: "Long Island Iced Tea",
+    ingredients: ["vodka", "white rum", "gin", "tequila", "triple sec", "lemon juice", "simple syrup", "cola"],
+    instructions: "Shake all spirits, lemon juice, and syrup with ice. Strain into glass with ice. Top with cola."
+  },
+  {
+    name: "Kamikaze",
+    ingredients: ["vodka", "triple sec", "lime juice"],
+    instructions: "Shake vodka, triple sec, and lime juice with ice. Strain into shot glass or rocks glass."
+  },
+  {
+    name: "Sidecar",
+    ingredients: ["cognac", "triple sec", "lemon juice", "sugar"],
+    optional: ["orange peel"],
+    instructions: "Rim glass with sugar. Shake cognac, triple sec, and lemon juice with ice. Strain into glass."
+  },
+  {
+    name: "White Lady",
+    ingredients: ["gin", "triple sec", "lemon juice"],
+    optional: ["egg white"],
+    instructions: "Shake gin, triple sec, and lemon juice with ice. Strain into chilled glass."
+  },
+  {
+    name: "Between the Sheets",
+    ingredients: ["cognac", "white rum", "triple sec", "lemon juice"],
+    instructions: "Shake all ingredients with ice. Strain into chilled glass."
+  },
+  {
+    name: "Sake Bomb",
+    ingredients: ["sake", "beer"],
+    instructions: "Drop shot of sake into glass of beer. Drink immediately."
+  },
+  {
+    name: "Sake Martini",
+    ingredients: ["sake", "gin", "dry vermouth"],
+    optional: ["lemon twist"],
+    instructions: "Stir sake, gin, and vermouth with ice. Strain into chilled glass. Garnish with lemon twist."
+  },
+  {
+    name: "Saketini",
+    ingredients: ["sake", "vodka"],
+    optional: ["cucumber", "lemon twist"],
+    instructions: "Stir sake and vodka with ice. Strain into chilled glass. Garnish with cucumber or lemon."
+  },
+  {
+    name: "Japanese Slipper",
+    ingredients: ["midori", "triple sec", "lemon juice"],
+    instructions: "Shake midori, triple sec, and lemon juice with ice. Strain into glass."
+  },
+  {
+    name: "Lychee Sake Martini",
+    ingredients: ["sake", "vodka", "lychee liqueur", "lychee juice"],
+    optional: ["lychee fruit"],
+    instructions: "Shake sake, vodka, lychee liqueur, and juice with ice. Strain into glass. Garnish with lychee."
+  },
+  {
+    name: "Michelada",
+    ingredients: ["beer", "lime juice", "hot sauce", "worcestershire sauce", "salt"],
+    instructions: "Rim glass with salt. Add lime juice, hot sauce, and worcestershire. Fill with beer over ice."
+  },
+  {
+    name: "Shandy",
+    ingredients: ["beer", "lemonade"],
+    instructions: "Fill glass half with beer, half with lemonade. Stir gently."
+  },
+  {
+    name: "Black Velvet",
+    ingredients: ["champagne", "stout beer"],
+    instructions: "Pour equal parts champagne and stout beer into glass. Do not stir."
+  },
+  {
+    name: "Irish Car Bomb",
+    ingredients: ["irish whiskey", "irish cream", "stout beer"],
+    instructions: "Drop shot of Irish whiskey and Irish cream into half pint of stout. Drink immediately."
+  },
+  {
+    name: "Boilermaker",
+    ingredients: ["whiskey", "beer"],
+    instructions: "Drop shot of whiskey into beer, or drink whiskey shot followed by beer."
+  },
+  {
+    name: "Tequila Sunrise",
+    ingredients: ["tequila", "orange juice", "grenadine"],
+    optional: ["orange", "cherry"],
+    instructions: "Fill glass with ice. Add tequila and orange juice. Slowly pour grenadine to create sunrise effect."
+  },
+  {
+    name: "Sex on the Beach",
+    ingredients: ["vodka", "peach schnapps", "orange juice", "cranberry juice"],
+    instructions: "Shake all ingredients with ice. Strain into glass with ice."
+  },
+  {
+    name: "Bahama Mama",
+    ingredients: ["dark rum", "coconut rum", "grenadine", "orange juice", "pineapple juice"],
+    instructions: "Shake all ingredients with ice. Strain into glass with ice."
+  },
+  {
+    name: "Blue Motorcycle",
+    ingredients: ["vodka", "gin", "white rum", "tequila", "blue curacao", "lemon juice", "sprite"],
+    instructions: "Shake all spirits and lemon juice with ice. Strain into glass with ice. Top with Sprite."
+  },
+  {
+    name: "Zombie",
+    ingredients: ["white rum", "dark rum", "151 rum", "lime juice", "orange juice", "pineapple juice", "grenadine"],
+    instructions: "Shake all ingredients with ice. Strain into tall glass. Float 151 rum on top."
+  },
+  {
+    name: "Hurricane",
+    ingredients: ["white rum", "dark rum", "passion fruit syrup", "lime juice", "orange juice"],
+    instructions: "Shake all ingredients with ice. Strain into hurricane glass with ice."
+  },
+  {
+    name: "Dark and Stormy",
+    ingredients: ["dark rum", "ginger beer", "lime juice"],
+    instructions: "Fill glass with ice. Add rum and lime juice. Top with ginger beer."
+  },
+  {
+    name: "Cuba Libre",
+    ingredients: ["white rum", "cola", "lime juice"],
+    instructions: "Fill glass with ice. Add rum and lime juice. Top with cola. Garnish with lime."
+  },
+  {
+    name: "Mojito Royale",
+    ingredients: ["white rum", "mint", "lime juice", "sugar", "champagne"],
+    instructions: "Muddle mint with sugar and lime juice. Add rum and ice. Top with champagne."
+  },
+  {
+    name: "French 75",
+    ingredients: ["gin", "lemon juice", "sugar", "champagne"],
+    instructions: "Shake gin, lemon juice, and sugar with ice. Strain into glass. Top with champagne."
+  },
+  {
+    name: "Kir Royale",
+    ingredients: ["champagne", "chambord"],
+    instructions: "Pour chambord into champagne flute. Top with champagne."
+  },
+  {
+    name: "Bellini",
+    ingredients: ["prosecco", "peach puree"],
+    instructions: "Pour peach puree into champagne flute. Top with prosecco. Stir gently."
+  },
+  {
+    name: "Mimosa",
+    ingredients: ["champagne", "orange juice"],
+    instructions: "Pour equal parts champagne and orange juice into champagne flute."
+  },
+  {
+    name: "B-52",
+    ingredients: ["coffee liqueur", "irish cream", "triple sec"],
+    instructions: "Layer coffee liqueur, then Irish cream, then triple sec in shot glass."
+  },
+  {
+    name: "Mudslide",
+    ingredients: ["vodka", "coffee liqueur", "irish cream"],
+    optional: ["cream"],
+    instructions: "Shake vodka, coffee liqueur, and Irish cream with ice. Strain into glass."
+  },
+  {
+    name: "White Russian",
+    ingredients: ["vodka", "coffee liqueur", "cream"],
+    instructions: "Add vodka and coffee liqueur to glass with ice. Float cream on top."
+  },
+  {
+    name: "Black Russian",
+    ingredients: ["vodka", "coffee liqueur"],
+    instructions: "Pour vodka and coffee liqueur over ice. Stir."
+  },
+  {
+    name: "Godfather",
+    ingredients: ["scotch", "amaretto"],
+    instructions: "Pour scotch and amaretto over ice. Stir."
+  },
+  {
+    name: "Godmother",
+    ingredients: ["vodka", "amaretto"],
+    instructions: "Pour vodka and amaretto over ice. Stir."
+  },
+  {
+    name: "Amaretto Sour",
+    ingredients: ["amaretto", "lemon juice", "sugar"],
+    optional: ["cherry", "orange"],
+    instructions: "Shake amaretto, lemon juice, and sugar with ice. Strain into glass."
+  },
+  {
+    name: "Screwdriver",
+    ingredients: ["vodka", "orange juice"],
+    instructions: "Fill glass with ice. Add vodka and top with orange juice. Stir."
+  },
+  {
+    name: "Greyhound",
+    ingredients: ["vodka", "grapefruit juice"],
+    instructions: "Fill glass with ice. Add vodka and top with grapefruit juice. Stir."
+  },
+  {
+    name: "Salty Dog",
+    ingredients: ["vodka", "grapefruit juice", "salt"],
+    instructions: "Rim glass with salt. Fill with ice. Add vodka and grapefruit juice. Stir."
+  },
+  {
+    name: "Vodka Tonic",
+    ingredients: ["vodka", "tonic water"],
+    optional: ["lime"],
+    instructions: "Fill glass with ice. Add vodka and top with tonic water. Garnish with lime."
+  },
+  {
+    name: "Cape Codder",
+    ingredients: ["vodka", "cranberry juice"],
+    optional: ["lime"],
+    instructions: "Fill glass with ice. Add vodka and cranberry juice. Garnish with lime."
+  },
+  {
+    name: "Sea Breeze",
+    ingredients: ["vodka", "cranberry juice", "grapefruit juice"],
+    instructions: "Fill glass with ice. Add vodka, cranberry juice, and grapefruit juice. Stir."
+  },
+  {
+    name: "Bay Breeze",
+    ingredients: ["vodka", "cranberry juice", "pineapple juice"],
+    instructions: "Fill glass with ice. Add vodka, cranberry juice, and pineapple juice. Stir."
+  },
+  {
+    name: "Madras",
+    ingredients: ["vodka", "cranberry juice", "orange juice"],
+    instructions: "Fill glass with ice. Add vodka, cranberry juice, and orange juice. Stir."
+  },
+  {
+    name: "Woo Woo",
+    ingredients: ["vodka", "peach schnapps", "cranberry juice"],
+    instructions: "Shake all ingredients with ice. Strain into glass."
+  },
+  {
+    name: "Fuzzy Navel",
+    ingredients: ["peach schnapps", "orange juice"],
+    instructions: "Fill glass with ice. Add peach schnapps and orange juice. Stir."
+  },
+  {
+    name: "Hairy Navel",
+    ingredients: ["vodka", "peach schnapps", "orange juice"],
+    instructions: "Fill glass with ice. Add vodka, peach schnapps, and orange juice. Stir."
+  },
+  {
+    name: "Melon Ball",
+    ingredients: ["vodka", "midori", "orange juice"],
+    instructions: "Shake all ingredients with ice. Strain into glass."
+  },
+  {
+    name: "Tokyo Tea",
+    ingredients: ["vodka", "gin", "white rum", "triple sec", "midori", "lemon juice", "sprite"],
+    instructions: "Shake all spirits and lemon juice with ice. Strain into glass. Top with Sprite."
+  },
+  {
+    name: "Green Tea Shot",
+    ingredients: ["jameson", "peach schnapps", "sour mix", "sprite"],
+    instructions: "Shake whiskey, schnapps, and sour mix with ice. Strain into shot glass. Top with splash of Sprite."
+  },
+  {
+    name: "Lemon Drop",
+    ingredients: ["vodka", "triple sec", "lemon juice", "sugar"],
+    instructions: "Rim glass with sugar. Shake vodka, triple sec, and lemon juice with ice. Strain into glass."
+  },
+  {
+    name: "Appletini",
+    ingredients: ["vodka", "apple schnapps", "triple sec"],
+    optional: ["apple slice"],
+    instructions: "Shake vodka, apple schnapps, and triple sec with ice. Strain into chilled glass."
+  },
+  {
+    name: "Chocolate Martini",
+    ingredients: ["vodka", "chocolate liqueur", "cream"],
+    instructions: "Shake vodka, chocolate liqueur, and cream with ice. Strain into chilled glass."
+  },
+  {
+    name: "French Martini",
+    ingredients: ["vodka", "chambord", "pineapple juice"],
+    instructions: "Shake vodka, chambord, and pineapple juice with ice. Strain into chilled glass."
+  },
+  {
+    name: "Pornstar Martini",
+    ingredients: ["vodka", "vanilla vodka", "passion fruit liqueur", "passion fruit puree", "lime juice", "sugar"],
+    optional: ["prosecco"],
+    instructions: "Shake vodkas, liqueur, puree, lime juice, and sugar with ice. Strain into glass. Serve with shot of prosecco."
+  },
+  {
+    name: "Corpse Reviver #2",
+    ingredients: ["gin", "triple sec", "lillet blanc", "lemon juice", "absinthe"],
+    instructions: "Rinse glass with absinthe. Shake gin, triple sec, Lillet, and lemon juice with ice. Strain into glass."
+  },
+  {
+    name: "Aviation",
+    ingredients: ["gin", "maraschino liqueur", "lemon juice", "creme de violette"],
+    instructions: "Shake all ingredients with ice. Strain into chilled glass."
+  },
+  {
+    name: "Last Word",
+    ingredients: ["gin", "green chartreuse", "maraschino liqueur", "lime juice"],
+    instructions: "Shake equal parts of all ingredients with ice. Strain into chilled glass."
+  },
+  {
+    name: "Bramble",
+    ingredients: ["gin", "lemon juice", "sugar", "creme de mure"],
+    optional: ["blackberry"],
+    instructions: "Shake gin, lemon juice, and sugar with ice. Strain over crushed ice. Drizzle creme de mure on top."
+  },
+  {
+    name: "Gimlet",
+    ingredients: ["gin", "lime juice", "sugar"],
+    instructions: "Shake gin, lime juice, and sugar with ice. Strain into chilled glass."
+  },
+  {
+    name: "Southside",
+    ingredients: ["gin", "lime juice", "sugar", "mint"],
+    instructions: "Shake gin, lime juice, sugar, and mint with ice. Strain into chilled glass."
+  },
+  {
+    name: "Bee's Knees",
+    ingredients: ["gin", "lemon juice", "honey syrup"],
+    instructions: "Shake gin, lemon juice, and honey syrup with ice. Strain into chilled glass."
+  },
+  {
+    name: "Boulevardier",
+    ingredients: ["bourbon", "campari", "sweet vermouth"],
+    instructions: "Stir bourbon, Campari, and vermouth with ice. Strain into glass with ice."
+  },
+  {
+    name: "Sazerac",
+    ingredients: ["rye whiskey", "sugar", "peychaud's bitters", "absinthe"],
+    optional: ["lemon peel"],
+    instructions: "Rinse glass with absinthe. Muddle sugar and bitters. Add whiskey and ice. Stir. Strain into absinthe-rinsed glass."
+  },
+  {
+    name: "Mint Julep",
+    ingredients: ["bourbon", "mint", "sugar", "water"],
+    instructions: "Muddle mint with sugar and water. Add bourbon and crushed ice. Stir until glass frosts."
+  },
+  {
+    name: "Rob Roy",
+    ingredients: ["scotch", "sweet vermouth", "bitters"],
+    optional: ["cherry"],
+    instructions: "Stir scotch, vermouth, and bitters with ice. Strain into glass. Garnish with cherry."
+  },
+  {
+    name: "Rusty Nail",
+    ingredients: ["scotch", "drambuie"],
+    instructions: "Pour scotch and Drambuie over ice. Stir."
+  },
+  {
+    name: "Blood and Sand",
+    ingredients: ["scotch", "cherry liqueur", "sweet vermouth", "orange juice"],
+    instructions: "Shake equal parts of all ingredients with ice. Strain into chilled glass."
+  },
+  {
+    name: "Penicillin",
+    ingredients: ["scotch", "islay scotch", "lemon juice", "honey syrup", "ginger"],
+    instructions: "Shake scotch, lemon juice, honey syrup, and ginger with ice. Strain into glass. Float Islay scotch on top."
+  }
+];
+
+// Common ingredients list for autocomplete
+const COMMON_INGREDIENTS = [
+  // Spirits
+  "vodka", "vanilla vodka", "gin", "rum", "white rum", "dark rum", "coconut rum", "151 rum",
+  "tequila", "whiskey", "bourbon", "rye whiskey", "irish whiskey", "scotch", "islay scotch",
+  "brandy", "cognac", "jameson",
+  
+  // Liqueurs
+  "triple sec", "blue curacao", "orange curacao", "campari", "aperol", "coffee liqueur",
+  "irish cream", "peach schnapps", "apple schnapps", "midori", "amaretto", "chambord",
+  "maraschino liqueur", "creme de violette", "creme de mure", "cherry liqueur", "drambuie",
+  "green chartreuse", "chocolate liqueur", "passion fruit liqueur", "lychee liqueur",
+  "absinthe", "lillet blanc",
+  
+  // Vermouth & Wine
+  "dry vermouth", "sweet vermouth", "champagne", "prosecco", "sake", "beer", "stout beer",
+  
+  // Juices
+  "lime juice", "lemon juice", "orange juice", "cranberry juice", "pineapple juice",
+  "tomato juice", "grapefruit juice", "passion fruit puree", "peach puree", "lychee juice",
+  
+  // Sodas & Mixers
+  "soda water", "tonic water", "ginger beer", "cola", "sprite", "lemonade", "grapefruit soda",
+  
+  // Syrups & Sweeteners
+  "sugar", "simple syrup", "agave syrup", "orgeat syrup", "honey syrup", "grenadine",
+  "sour mix",
+  
+  // Condiments & Spices
+  "bitters", "peychaud's bitters", "salt", "pepper", "worcestershire sauce", "hot sauce",
+  
+  // Fresh Ingredients
+  "mint", "lime", "lemon", "orange", "grapefruit", "cucumber", "ginger", "blackberry",
+  
+  // Dairy & Cream
+  "cream", "coconut cream", "egg white",
+  
+  // Garnishes
+  "olive", "cherry", "celery", "lemon twist", "orange peel", "apple slice", "lychee fruit"
+];
+
+export default function CocktailApp() {
+  const [myIngredients, setMyIngredients] = useState([]);
+  const [newIngredient, setNewIngredient] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Load ingredients from memory on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('myIngredients');
+    if (saved) {
+      setMyIngredients(JSON.parse(saved));
+    }
+  }, []);
+
+  // Save ingredients to memory whenever they change
+  useEffect(() => {
+    localStorage.setItem('myIngredients', JSON.stringify(myIngredients));
+  }, [myIngredients]);
+
+  // Filter suggestions based on input
+  useEffect(() => {
+    if (newIngredient.trim().length > 0) {
+      const filtered = COMMON_INGREDIENTS.filter(ing => 
+        ing.toLowerCase().includes(newIngredient.toLowerCase()) &&
+        !myIngredients.some(myIng => myIng.toLowerCase() === ing.toLowerCase())
+      ).slice(0, 5);
+      setSuggestions(filtered);
+    } else {
+      setSuggestions([]);
+    }
+  }, [newIngredient, myIngredients]);
+
+  const addIngredient = (ingredient) => {
+    const trimmed = ingredient.trim().toLowerCase();
+    if (trimmed && !myIngredients.some(ing => ing.toLowerCase() === trimmed)) {
+      setMyIngredients([...myIngredients, trimmed]);
+      setNewIngredient("");
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const removeIngredient = (ingredient) => {
+    setMyIngredients(myIngredients.filter(ing => ing !== ingredient));
+  };
+
+  // Find cocktails user can make
+  const getAvailableCocktails = () => {
+    return COCKTAIL_DATABASE.map(cocktail => {
+      const requiredIngredients = cocktail.ingredients;
+      const hasAll = requiredIngredients.every(ing => 
+        myIngredients.some(myIng => myIng.toLowerCase() === ing.toLowerCase())
+      );
+      const missingCount = requiredIngredients.filter(ing =>
+        !myIngredients.some(myIng => myIng.toLowerCase() === ing.toLowerCase())
+      ).length;
+      
+      return {
+        ...cocktail,
+        canMake: hasAll,
+        missingCount,
+        missing: requiredIngredients.filter(ing =>
+          !myIngredients.some(myIng => myIng.toLowerCase() === ing.toLowerCase())
+        )
+      };
+    }).sort((a, b) => {
+      if (a.canMake && !b.canMake) return -1;
+      if (!a.canMake && b.canMake) return 1;
+      return a.missingCount - b.missingCount;
+    });
+  };
+
+  const filteredCocktails = getAvailableCocktails().filter(cocktail =>
+    cocktail.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const canMakeCount = filteredCocktails.filter(c => c.canMake).length;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-pink-800 text-white pb-20">
+      {/* Header */}
+      <div className="bg-black bg-opacity-30 backdrop-blur-sm p-6 sticky top-0 z-10">
+        <div className="flex items-center gap-3 mb-2">
+          <Wine className="w-8 h-8" />
+          <h1 className="text-3xl font-bold">My Bar</h1>
+        </div>
+        <p className="text-purple-200">Add your ingredients and discover cocktails</p>
+      </div>
+
+      <div className="p-6 max-w-2xl mx-auto">
+        {/* Add Ingredient Section */}
+        <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-6 mb-6 shadow-xl">
+          <h2 className="text-xl font-semibold mb-4">Add Ingredients</h2>
+          <div className="relative">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newIngredient}
+                onChange={(e) => {
+                  setNewIngredient(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                onKeyPress={(e) => e.key === 'Enter' && addIngredient(newIngredient)}
+                placeholder="e.g., vodka, lime juice..."
+                className="flex-1 px-4 py-3 rounded-xl bg-white bg-opacity-20 border border-white border-opacity-30 placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-pink-400"
+              />
+              <button
+                onClick={() => addIngredient(newIngredient)}
+                className="bg-pink-500 hover:bg-pink-600 px-6 py-3 rounded-xl font-semibold transition-colors shadow-lg"
+              >
+                <Plus className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Suggestions Dropdown */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute w-full mt-2 bg-white bg-opacity-95 backdrop-blur-md rounded-xl shadow-xl overflow-hidden z-20">
+                {suggestions.map((suggestion, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => addIngredient(suggestion)}
+                    className="w-full text-left px-4 py-3 hover:bg-purple-100 text-gray-800 transition-colors"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* My Ingredients */}
+          <div className="mt-4">
+            {myIngredients.length === 0 ? (
+              <p className="text-purple-200 text-center py-4">No ingredients yet. Add some to get started!</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {myIngredients.map((ingredient, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2 shadow"
+                  >
+                    <span className="capitalize">{ingredient}</span>
+                    <button
+                      onClick={() => removeIngredient(ingredient)}
+                      className="hover:bg-white hover:bg-opacity-20 rounded-full p-1 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-2xl p-6 mb-6 shadow-xl">
+          <div className="text-center">
+            <p className="text-4xl font-bold mb-2">{canMakeCount}</p>
+            <p className="text-lg">Cocktails You Can Make Right Now</p>
+          </div>
+        </div>
+
+        {/* Search */}
+        {myIngredients.length > 0 && (
+          <div className="mb-6">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-purple-200" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search cocktails..."
+                className="w-full pl-12 pr-4 py-3 rounded-xl bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-30 placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-pink-400"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Cocktail List */}
+        <div className="space-y-4">
+          {filteredCocktails.map((cocktail, idx) => (
+            <div
+              key={idx}
+              className={`rounded-2xl p-6 shadow-xl transition-all ${
+                cocktail.canMake
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-600'
+                  : 'bg-white bg-opacity-10 backdrop-blur-md'
+              }`}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <h3 className="text-2xl font-bold">{cocktail.name}</h3>
+                {cocktail.canMake && (
+                  <div className="bg-white bg-opacity-20 rounded-full p-2">
+                    <Check className="w-6 h-6" />
+                  </div>
+                )}
+              </div>
+
+              {!cocktail.canMake && cocktail.missingCount > 0 && (
+                <p className="text-sm text-pink-200 mb-2">
+                  Missing {cocktail.missingCount} ingredient{cocktail.missingCount !== 1 ? 's' : ''}: {cocktail.missing.join(', ')}
+                </p>
+              )}
+
+              <div className="mb-3">
+                <p className="text-sm font-semibold mb-1">Ingredients:</p>
+                <p className="text-sm opacity-90">{cocktail.ingredients.join(', ')}</p>
+                {cocktail.optional && cocktail.optional.length > 0 && (
+                  <p className="text-sm opacity-75 mt-1">Optional: {cocktail.optional.join(', ')}</p>
+                )}
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold mb-1">Instructions:</p>
+                <p className="text-sm opacity-90">{cocktail.instructions}</p>
+              </div>
+            </div>
+          ))}
+
+          {myIngredients.length === 0 && (
+            <div className="text-center py-12">
+              <Wine className="w-16 h-16 mx-auto mb-4 opacity-50" />
+              <p className="text-xl text-purple-200">Add ingredients to see cocktail recommendations!</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
