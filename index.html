@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#4F2600">
+    <meta name="theme-color" content="#291502">
     <title>My Cocktail Bar</title>
     <link rel="manifest" href="manifest.json">
     
@@ -28,7 +28,7 @@
                 sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            background: #4F2600;
+            background: #291502;
         }
 
         #root {
@@ -36,11 +36,11 @@
         }
 
         .wood-bg {
-            background: #4F2600;
+            background: #291502;
         }
 
         .wood-card {
-            background: linear-gradient(135deg, #5d3000 0%, #4F2600 100%);
+            background: linear-gradient(135deg, #3a1f03 0%, #291502 100%);
         }
 
         /* Prevent zoom on input focus for iOS */
@@ -759,7 +759,7 @@
           return (
             <div className="min-h-screen wood-bg text-white pb-20">
               {/* Header */}
-              <div className="p-6 sticky top-0 z-20 shadow-lg" style={{background: 'linear-gradient(135deg, #6d3800 0%, #5d3000 50%, #4F2600 100%)'}}>
+              <div className="p-6 sticky top-0 z-20 shadow-lg" style={{background: 'linear-gradient(135deg, #4a2804 0%, #3a1f03 50%, #291502 100%)'}}>
                 <div className="flex items-center gap-3 mb-4">
                   <Wine />
                   <h1 className="text-3xl font-bold">My Bar</h1>
@@ -770,38 +770,38 @@
                   <button
                     onClick={() => setShowDropdown(!showDropdown)}
                     className="w-full px-4 py-3 rounded-xl flex items-center justify-between transition-all"
-                    style={{background: 'rgba(79, 38, 0, 0.6)', border: '2px solid #CC5500'}}
+                    style={{background: 'rgba(41, 21, 2, 0.6)', border: '2px solid #CC5500'}}
                   >
                     <span className="font-semibold">{pageNames[currentPage]}</span>
                     <ChevronDown />
                   </button>
 
                   {showDropdown && (
-                    <div className="absolute w-full mt-2 rounded-xl shadow-xl overflow-hidden" style={{background: '#3d1f00', border: '2px solid #CC5500'}}>
+                    <div className="absolute w-full mt-2 rounded-xl shadow-xl overflow-hidden" style={{background: '#1a0f01', border: '2px solid #CC5500'}}>
                       <button
                         onClick={() => { setCurrentPage("ingredients"); setShowDropdown(false); }}
                         className="w-full text-left px-4 py-3 transition-colors"
-                        style={{background: currentPage === "ingredients" ? '#6d3800' : 'transparent'}}
-                        onMouseEnter={(e) => e.target.style.background = '#5d3000'}
-                        onMouseLeave={(e) => e.target.style.background = currentPage === "ingredients" ? '#6d3800' : 'transparent'}
+                        style={{background: currentPage === "ingredients" ? '#4a2804' : 'transparent'}}
+                        onMouseEnter={(e) => e.target.style.background = '#3a1f03'}
+                        onMouseLeave={(e) => e.target.style.background = currentPage === "ingredients" ? '#4a2804' : 'transparent'}
                       >
                         My Ingredients
                       </button>
                       <button
                         onClick={() => { setCurrentPage("cocktails"); setShowDropdown(false); }}
                         className="w-full text-left px-4 py-3 transition-colors"
-                        style={{background: currentPage === "cocktails" ? '#6d3800' : 'transparent'}}
-                        onMouseEnter={(e) => e.target.style.background = '#5d3000'}
-                        onMouseLeave={(e) => e.target.style.background = currentPage === "cocktails" ? '#6d3800' : 'transparent'}
+                        style={{background: currentPage === "cocktails" ? '#4a2804' : 'transparent'}}
+                        onMouseEnter={(e) => e.target.style.background = '#3a1f03'}
+                        onMouseLeave={(e) => e.target.style.background = currentPage === "cocktails" ? '#4a2804' : 'transparent'}
                       >
                         Available Cocktails
                       </button>
                       <button
                         onClick={() => { setCurrentPage("recipes"); setShowDropdown(false); }}
                         className="w-full text-left px-4 py-3 transition-colors"
-                        style={{background: currentPage === "recipes" ? '#6d3800' : 'transparent'}}
-                        onMouseEnter={(e) => e.target.style.background = '#5d3000'}
-                        onMouseLeave={(e) => e.target.style.background = currentPage === "recipes" ? '#6d3800' : 'transparent'}
+                        style={{background: currentPage === "recipes" ? '#4a2804' : 'transparent'}}
+                        onMouseEnter={(e) => e.target.style.background = '#3a1f03'}
+                        onMouseLeave={(e) => e.target.style.background = currentPage === "recipes" ? '#4a2804' : 'transparent'}
                       >
                         Custom Recipes
                       </button>
@@ -829,7 +829,7 @@
                             onKeyPress={(e) => e.key === 'Enter' && addIngredient(newIngredient)}
                             placeholder="e.g., vodka, lime juice..."
                             className="flex-1 px-4 py-3 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white border-2"
-                            style={{background: 'rgba(79, 38, 0, 0.5)', borderColor: '#CC5500'}}
+                            style={{background: 'rgba(41, 21, 2, 0.5)', borderColor: '#CC5500'}}
                           />
                           <button
                             onClick={() => addIngredient(newIngredient)}
@@ -842,14 +842,14 @@
 
                         {/* Suggestions Dropdown */}
                         {showSuggestions && suggestions.length > 0 && (
-                          <div className="absolute w-full mt-2 rounded-xl shadow-xl overflow-hidden z-20 border-2" style={{background: '#3d1f00', borderColor: '#CC5500'}}>
+                          <div className="absolute w-full mt-2 rounded-xl shadow-xl overflow-hidden z-20 border-2" style={{background: '#1a0f01', borderColor: '#CC5500'}}>
                             {suggestions.map((suggestion, idx) => (
                               <button
                                 key={idx}
                                 onClick={() => addIngredient(suggestion)}
                                 className="w-full text-left px-4 py-3 text-white transition-colors"
                                 style={{background: 'transparent'}}
-                                onMouseEnter={(e) => e.target.style.background = '#5d3000'}
+                                onMouseEnter={(e) => e.target.style.background = '#3a1f03'}
                                 onMouseLeave={(e) => e.target.style.background = 'transparent'}
                               >
                                 {suggestion}
@@ -911,7 +911,7 @@
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search cocktails..."
                             className="w-full pl-12 pr-4 py-3 rounded-xl border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
-                            style={{background: 'rgba(79, 38, 0, 0.5)', borderColor: '#CC5500'}}
+                            style={{background: 'rgba(41, 21, 2, 0.5)', borderColor: '#CC5500'}}
                           />
                         </div>
                       </div>
@@ -926,7 +926,7 @@
                           style={{
                             background: cocktail.canMake
                               ? 'linear-gradient(135deg, #1a5f1a 0%, #2d7a2d 100%)'
-                              : 'linear-gradient(135deg, #6d3800 0%, #5d3000 100%)',
+                              : 'linear-gradient(135deg, #4a2804 0%, #3a1f03 100%)',
                             borderColor: cocktail.canMake ? '#2d7a2d' : '#CC5500'
                           }}
                         >
@@ -990,7 +990,7 @@
                             onChange={(e) => setNewRecipeName(e.target.value)}
                             placeholder="e.g., My Special Margarita"
                             className="w-full px-4 py-3 rounded-xl border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
-                            style={{background: 'rgba(79, 38, 0, 0.5)', borderColor: '#CC5500'}}
+                            style={{background: 'rgba(41, 21, 2, 0.5)', borderColor: '#CC5500'}}
                           />
                         </div>
 
@@ -1002,7 +1002,7 @@
                             onChange={(e) => setNewRecipeIngredients(e.target.value)}
                             placeholder="e.g., tequila, lime juice, salt"
                             className="w-full px-4 py-3 rounded-xl border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
-                            style={{background: 'rgba(79, 38, 0, 0.5)', borderColor: '#CC5500'}}
+                            style={{background: 'rgba(41, 21, 2, 0.5)', borderColor: '#CC5500'}}
                           />
                         </div>
 
@@ -1014,7 +1014,7 @@
                             placeholder="Describe how to make this cocktail..."
                             rows="4"
                             className="w-full px-4 py-3 rounded-xl border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white resize-none"
-                            style={{background: 'rgba(79, 38, 0, 0.5)', borderColor: '#CC5500'}}
+                            style={{background: 'rgba(41, 21, 2, 0.5)', borderColor: '#CC5500'}}
                           />
                         </div>
 
