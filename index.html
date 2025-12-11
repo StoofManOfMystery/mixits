@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#3e2723">
     <title>My Cocktail Bar</title>
     <link rel="manifest" href="manifest.json">
     
@@ -28,12 +28,34 @@
                 sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            background: #2d1f1a;
         }
-        
+
         #root {
             min-height: 100vh;
         }
-        
+
+        /* Wood grain texture effect */
+        .wood-bg {
+            background:
+                linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.1) 50%, transparent 100%),
+                repeating-linear-gradient(
+                    90deg,
+                    #3e2723 0px,
+                    #4e342e 2px,
+                    #3e2723 4px,
+                    #2d1f1a 6px,
+                    #3e2723 8px
+                ),
+                linear-gradient(180deg, #3e2723 0%, #2d1f1a 100%);
+        }
+
+        .wood-card {
+            background:
+                linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.05) 50%, transparent 100%),
+                linear-gradient(180deg, #4e342e 0%, #3e2723 50%, #4e342e 100%);
+        }
+
         /* Prevent zoom on input focus for iOS */
         input {
             font-size: 16px !important;
@@ -748,9 +770,9 @@
           };
 
           return (
-            <div className="min-h-screen bg-black text-white pb-20">
+            <div className="min-h-screen wood-bg text-white pb-20">
               {/* Header */}
-              <div className="bg-gradient-to-r from-orange-600 to-orange-700 p-6 sticky top-0 z-20 shadow-lg" style={{background: 'linear-gradient(135deg, #CC5500 0%, #FF6A00 100%)'}}>
+              <div className="p-6 sticky top-0 z-20 shadow-lg" style={{background: 'linear-gradient(135deg, #5d4037 0%, #4e342e 50%, #3e2723 100%)'}}>
                 <div className="flex items-center gap-3 mb-4">
                   <Wine />
                   <h1 className="text-3xl font-bold">My Bar</h1>
@@ -760,29 +782,39 @@
                 <div className="relative">
                   <button
                     onClick={() => setShowDropdown(!showDropdown)}
-                    className="w-full bg-black bg-opacity-30 backdrop-blur-sm px-4 py-3 rounded-xl flex items-center justify-between hover:bg-opacity-40 transition-all"
+                    className="w-full px-4 py-3 rounded-xl flex items-center justify-between transition-all"
+                    style={{background: 'rgba(62, 39, 35, 0.6)', border: '2px solid #CC5500'}}
                   >
                     <span className="font-semibold">{pageNames[currentPage]}</span>
                     <ChevronDown />
                   </button>
 
                   {showDropdown && (
-                    <div className="absolute w-full mt-2 bg-black bg-opacity-95 backdrop-blur-md rounded-xl shadow-xl overflow-hidden">
+                    <div className="absolute w-full mt-2 rounded-xl shadow-xl overflow-hidden" style={{background: '#2d1f1a', border: '2px solid #CC5500'}}>
                       <button
                         onClick={() => { setCurrentPage("ingredients"); setShowDropdown(false); }}
-                        className={`w-full text-left px-4 py-3 hover:bg-orange-600 transition-colors ${currentPage === "ingredients" ? "bg-orange-700" : ""}`}
+                        className="w-full text-left px-4 py-3 transition-colors"
+                        style={{background: currentPage === "ingredients" ? '#5d4037' : 'transparent'}}
+                        onMouseEnter={(e) => e.target.style.background = '#4e342e'}
+                        onMouseLeave={(e) => e.target.style.background = currentPage === "ingredients" ? '#5d4037' : 'transparent'}
                       >
                         My Ingredients
                       </button>
                       <button
                         onClick={() => { setCurrentPage("cocktails"); setShowDropdown(false); }}
-                        className={`w-full text-left px-4 py-3 hover:bg-orange-600 transition-colors ${currentPage === "cocktails" ? "bg-orange-700" : ""}`}
+                        className="w-full text-left px-4 py-3 transition-colors"
+                        style={{background: currentPage === "cocktails" ? '#5d4037' : 'transparent'}}
+                        onMouseEnter={(e) => e.target.style.background = '#4e342e'}
+                        onMouseLeave={(e) => e.target.style.background = currentPage === "cocktails" ? '#5d4037' : 'transparent'}
                       >
                         Available Cocktails
                       </button>
                       <button
                         onClick={() => { setCurrentPage("recipes"); setShowDropdown(false); }}
-                        className={`w-full text-left px-4 py-3 hover:bg-orange-600 transition-colors ${currentPage === "recipes" ? "bg-orange-700" : ""}`}
+                        className="w-full text-left px-4 py-3 transition-colors"
+                        style={{background: currentPage === "recipes" ? '#5d4037' : 'transparent'}}
+                        onMouseEnter={(e) => e.target.style.background = '#4e342e'}
+                        onMouseLeave={(e) => e.target.style.background = currentPage === "recipes" ? '#5d4037' : 'transparent'}
                       >
                         Custom Recipes
                       </button>
@@ -795,7 +827,7 @@
                 {/* PAGE 1: MY INGREDIENTS */}
                 {currentPage === "ingredients" && (
                   <>
-                    <div className="rounded-2xl p-6 mb-6 shadow-xl" style={{background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'}}>
+                    <div className="wood-card rounded-2xl p-6 mb-6 shadow-xl border-2" style={{borderColor: '#CC5500'}}>
                       <h2 className="text-xl font-semibold mb-4">Add Ingredients</h2>
                       <div className="relative">
                         <div className="flex gap-2">
@@ -809,8 +841,8 @@
                             onFocus={() => setShowSuggestions(true)}
                             onKeyPress={(e) => e.key === 'Enter' && addIngredient(newIngredient)}
                             placeholder="e.g., vodka, lime juice..."
-                            className="flex-1 px-4 py-3 rounded-xl bg-black bg-opacity-50 border-2 border-orange-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
-                            style={{borderColor: '#CC5500'}}
+                            className="flex-1 px-4 py-3 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white border-2"
+                            style={{background: 'rgba(62, 39, 35, 0.5)', borderColor: '#CC5500'}}
                           />
                           <button
                             onClick={() => addIngredient(newIngredient)}
@@ -823,12 +855,15 @@
 
                         {/* Suggestions Dropdown */}
                         {showSuggestions && suggestions.length > 0 && (
-                          <div className="absolute w-full mt-2 bg-gray-900 backdrop-blur-md rounded-xl shadow-xl overflow-hidden z-20 border-2" style={{borderColor: '#CC5500'}}>
+                          <div className="absolute w-full mt-2 rounded-xl shadow-xl overflow-hidden z-20 border-2" style={{background: '#2d1f1a', borderColor: '#CC5500'}}>
                             {suggestions.map((suggestion, idx) => (
                               <button
                                 key={idx}
                                 onClick={() => addIngredient(suggestion)}
-                                className="w-full text-left px-4 py-3 text-white hover:bg-orange-600 transition-colors"
+                                className="w-full text-left px-4 py-3 text-white transition-colors"
+                                style={{background: 'transparent'}}
+                                onMouseEnter={(e) => e.target.style.background = '#4e342e'}
+                                onMouseLeave={(e) => e.target.style.background = 'transparent'}
                               >
                                 {suggestion}
                               </button>
@@ -846,8 +881,8 @@
                             {myIngredients.map((ingredient, idx) => (
                               <div
                                 key={idx}
-                                className="px-4 py-2 rounded-full flex items-center gap-2 shadow text-white"
-                                style={{background: 'linear-gradient(135deg, #CC5500 0%, #FF6A00 100%)'}}
+                                className="px-4 py-2 rounded-full flex items-center gap-2 shadow text-white border-2"
+                                style={{background: 'linear-gradient(135deg, #CC5500 0%, #FF6A00 100%)', borderColor: '#8B4000'}}
                               >
                                 <span className="capitalize font-medium">{ingredient}</span>
                                 <button
@@ -869,7 +904,7 @@
                 {currentPage === "cocktails" && (
                   <>
                     {/* Stats */}
-                    <div className="rounded-2xl p-6 mb-6 shadow-xl" style={{background: 'linear-gradient(135deg, #CC5500 0%, #FF6A00 100%)'}}>
+                    <div className="rounded-2xl p-6 mb-6 shadow-xl border-2" style={{background: 'linear-gradient(135deg, #CC5500 0%, #FF6A00 100%)', borderColor: '#8B4000'}}>
                       <div className="text-center">
                         <p className="text-4xl font-bold mb-2">{canMakeCount}</p>
                         <p className="text-lg">Cocktails You Can Make Right Now</p>
@@ -888,8 +923,8 @@
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search cocktails..."
-                            className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-900 border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
-                            style={{borderColor: '#CC5500'}}
+                            className="w-full pl-12 pr-4 py-3 rounded-xl border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
+                            style={{background: 'rgba(62, 39, 35, 0.5)', borderColor: '#CC5500'}}
                           />
                         </div>
                       </div>
@@ -900,11 +935,12 @@
                       {filteredCocktails.map((cocktail, idx) => (
                         <div
                           key={idx}
-                          className="rounded-2xl p-6 shadow-xl transition-all"
+                          className="rounded-2xl p-6 shadow-xl transition-all border-2"
                           style={{
                             background: cocktail.canMake
                               ? 'linear-gradient(135deg, #1a5f1a 0%, #2d7a2d 100%)'
-                              : 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
+                              : 'linear-gradient(135deg, #4e342e 0%, #3e2723 100%)',
+                            borderColor: cocktail.canMake ? '#2d7a2d' : '#CC5500'
                           }}
                         >
                           <div className="flex items-start justify-between mb-3">
@@ -955,7 +991,7 @@
                 {/* PAGE 3: CUSTOM RECIPES */}
                 {currentPage === "recipes" && (
                   <>
-                    <div className="rounded-2xl p-6 mb-6 shadow-xl" style={{background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'}}>
+                    <div className="wood-card rounded-2xl p-6 mb-6 shadow-xl border-2" style={{borderColor: '#CC5500'}}>
                       <h2 className="text-xl font-semibold mb-4 text-white">Add Custom Recipe</h2>
 
                       <div className="space-y-4">
@@ -966,8 +1002,8 @@
                             value={newRecipeName}
                             onChange={(e) => setNewRecipeName(e.target.value)}
                             placeholder="e.g., My Special Margarita"
-                            className="w-full px-4 py-3 rounded-xl bg-black bg-opacity-50 border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
-                            style={{borderColor: '#CC5500'}}
+                            className="w-full px-4 py-3 rounded-xl border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
+                            style={{background: 'rgba(62, 39, 35, 0.5)', borderColor: '#CC5500'}}
                           />
                         </div>
 
@@ -978,8 +1014,8 @@
                             value={newRecipeIngredients}
                             onChange={(e) => setNewRecipeIngredients(e.target.value)}
                             placeholder="e.g., tequila, lime juice, salt"
-                            className="w-full px-4 py-3 rounded-xl bg-black bg-opacity-50 border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
-                            style={{borderColor: '#CC5500'}}
+                            className="w-full px-4 py-3 rounded-xl border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
+                            style={{background: 'rgba(62, 39, 35, 0.5)', borderColor: '#CC5500'}}
                           />
                         </div>
 
@@ -990,8 +1026,8 @@
                             onChange={(e) => setNewRecipeInstructions(e.target.value)}
                             placeholder="Describe how to make this cocktail..."
                             rows="4"
-                            className="w-full px-4 py-3 rounded-xl bg-black bg-opacity-50 border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white resize-none"
-                            style={{borderColor: '#CC5500'}}
+                            className="w-full px-4 py-3 rounded-xl border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white resize-none"
+                            style={{background: 'rgba(62, 39, 35, 0.5)', borderColor: '#CC5500'}}
                           />
                         </div>
 
@@ -1014,8 +1050,8 @@
                         customRecipes.map((recipe, idx) => (
                           <div
                             key={idx}
-                            className="rounded-2xl p-6 shadow-xl"
-                            style={{background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'}}
+                            className="wood-card rounded-2xl p-6 shadow-xl border-2"
+                            style={{borderColor: '#CC5500'}}
                           >
                             <div className="flex items-start justify-between mb-3">
                               <h3 className="text-2xl font-bold text-white">{recipe.name}</h3>
