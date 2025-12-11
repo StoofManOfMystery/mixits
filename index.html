@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#7c3aed">
+    <meta name="theme-color" content="#000000">
     <title>My Cocktail Bar</title>
     <link rel="manifest" href="manifest.json">
     
@@ -79,6 +79,12 @@
         const Check = () => (
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        );
+
+        const ChevronDown = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
         );
 
@@ -625,12 +631,24 @@
           const [suggestions, setSuggestions] = useState([]);
           const [showSuggestions, setShowSuggestions] = useState(false);
           const [searchQuery, setSearchQuery] = useState("");
+          const [currentPage, setCurrentPage] = useState("ingredients");
+          const [customRecipes, setCustomRecipes] = useState([]);
+          const [showDropdown, setShowDropdown] = useState(false);
 
-          // Load ingredients from memory on mount
+          // New recipe form state
+          const [newRecipeName, setNewRecipeName] = useState("");
+          const [newRecipeIngredients, setNewRecipeIngredients] = useState("");
+          const [newRecipeInstructions, setNewRecipeInstructions] = useState("");
+
+          // Load ingredients and custom recipes from memory on mount
           useEffect(() => {
             const saved = localStorage.getItem('myIngredients');
             if (saved) {
               setMyIngredients(JSON.parse(saved));
+            }
+            const savedRecipes = localStorage.getItem('customRecipes');
+            if (savedRecipes) {
+              setCustomRecipes(JSON.parse(savedRecipes));
             }
           }, []);
 
@@ -638,6 +656,11 @@
           useEffect(() => {
             localStorage.setItem('myIngredients', JSON.stringify(myIngredients));
           }, [myIngredients]);
+
+          // Save custom recipes to memory whenever they change
+          useEffect(() => {
+            localStorage.setItem('customRecipes', JSON.stringify(customRecipes));
+          }, [customRecipes]);
 
           // Filter suggestions based on input
           useEffect(() => {
@@ -666,9 +689,29 @@
             setMyIngredients(myIngredients.filter(ing => ing !== ingredient));
           };
 
+          const addCustomRecipe = () => {
+            if (newRecipeName.trim() && newRecipeIngredients.trim() && newRecipeInstructions.trim()) {
+              const recipe = {
+                name: newRecipeName.trim(),
+                ingredients: newRecipeIngredients.split(',').map(i => i.trim().toLowerCase()),
+                instructions: newRecipeInstructions.trim(),
+                isCustom: true
+              };
+              setCustomRecipes([...customRecipes, recipe]);
+              setNewRecipeName("");
+              setNewRecipeIngredients("");
+              setNewRecipeInstructions("");
+            }
+          };
+
+          const deleteCustomRecipe = (index) => {
+            setCustomRecipes(customRecipes.filter((_, i) => i !== index));
+          };
+
           // Find cocktails user can make
           const getAvailableCocktails = () => {
-            return COCKTAIL_DATABASE.map(cocktail => {
+            const allCocktails = [...COCKTAIL_DATABASE, ...customRecipes];
+            return allCocktails.map(cocktail => {
               const requiredIngredients = cocktail.ingredients;
               const hasAll = requiredIngredients.every(ing => 
                 myIngredients.some(myIng => myIng.toLowerCase() === ing.toLowerCase())
@@ -698,160 +741,307 @@
 
           const canMakeCount = filteredCocktails.filter(c => c.canMake).length;
 
+          const pageNames = {
+            ingredients: "My Ingredients",
+            cocktails: "Available Cocktails",
+            recipes: "Custom Recipes"
+          };
+
           return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-pink-800 text-white pb-20">
+            <div className="min-h-screen bg-black text-white pb-20">
               {/* Header */}
-              <div className="bg-black bg-opacity-30 backdrop-blur-sm p-6 sticky top-0 z-10">
-                <div className="flex items-center gap-3 mb-2">
+              <div className="bg-gradient-to-r from-orange-600 to-orange-700 p-6 sticky top-0 z-20 shadow-lg" style={{background: 'linear-gradient(135deg, #CC5500 0%, #FF6A00 100%)'}}>
+                <div className="flex items-center gap-3 mb-4">
                   <Wine />
                   <h1 className="text-3xl font-bold">My Bar</h1>
                 </div>
-                <p className="text-purple-200">Add your ingredients and discover cocktails</p>
-              </div>
 
-              <div className="p-6 max-w-2xl mx-auto">
-                {/* Add Ingredient Section */}
-                <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-6 mb-6 shadow-xl">
-                  <h2 className="text-xl font-semibold mb-4">Add Ingredients</h2>
-                  <div className="relative">
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newIngredient}
-                        onChange={(e) => {
-                          setNewIngredient(e.target.value);
-                          setShowSuggestions(true);
-                        }}
-                        onFocus={() => setShowSuggestions(true)}
-                        onKeyPress={(e) => e.key === 'Enter' && addIngredient(newIngredient)}
-                        placeholder="e.g., vodka, lime juice..."
-                        className="flex-1 px-4 py-3 rounded-xl bg-white bg-opacity-20 border border-white border-opacity-30 placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-pink-400 text-white"
-                      />
+                {/* Dropdown Navigation */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    className="w-full bg-black bg-opacity-30 backdrop-blur-sm px-4 py-3 rounded-xl flex items-center justify-between hover:bg-opacity-40 transition-all"
+                  >
+                    <span className="font-semibold">{pageNames[currentPage]}</span>
+                    <ChevronDown />
+                  </button>
+
+                  {showDropdown && (
+                    <div className="absolute w-full mt-2 bg-black bg-opacity-95 backdrop-blur-md rounded-xl shadow-xl overflow-hidden">
                       <button
-                        onClick={() => addIngredient(newIngredient)}
-                        className="bg-pink-500 hover:bg-pink-600 px-6 py-3 rounded-xl font-semibold transition-colors shadow-lg"
+                        onClick={() => { setCurrentPage("ingredients"); setShowDropdown(false); }}
+                        className={`w-full text-left px-4 py-3 hover:bg-orange-600 transition-colors ${currentPage === "ingredients" ? "bg-orange-700" : ""}`}
                       >
-                        <Plus />
+                        My Ingredients
                       </button>
-                    </div>
-                    
-                    {/* Suggestions Dropdown */}
-                    {showSuggestions && suggestions.length > 0 && (
-                      <div className="absolute w-full mt-2 bg-white bg-opacity-95 backdrop-blur-md rounded-xl shadow-xl overflow-hidden z-20">
-                        {suggestions.map((suggestion, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => addIngredient(suggestion)}
-                            className="w-full text-left px-4 py-3 hover:bg-purple-100 text-gray-800 transition-colors"
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* My Ingredients */}
-                  <div className="mt-4">
-                    {myIngredients.length === 0 ? (
-                      <p className="text-purple-200 text-center py-4">No ingredients yet. Add some to get started!</p>
-                    ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {myIngredients.map((ingredient, idx) => (
-                          <div
-                            key={idx}
-                            className="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2 shadow"
-                          >
-                            <span className="capitalize">{ingredient}</span>
-                            <button
-                              onClick={() => removeIngredient(ingredient)}
-                              className="hover:bg-white hover:bg-opacity-20 rounded-full p-1 transition-colors"
-                            >
-                              <X />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-2xl p-6 mb-6 shadow-xl">
-                  <div className="text-center">
-                    <p className="text-4xl font-bold mb-2">{canMakeCount}</p>
-                    <p className="text-lg">Cocktails You Can Make Right Now</p>
-                  </div>
-                </div>
-
-                {/* Search */}
-                {myIngredients.length > 0 && (
-                  <div className="mb-6">
-                    <div className="relative">
-                      <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                        <Search />
-                      </div>
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search cocktails..."
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-30 placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-pink-400 text-white"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Cocktail List */}
-                <div className="space-y-4">
-                  {filteredCocktails.map((cocktail, idx) => (
-                    <div
-                      key={idx}
-                      className={`rounded-2xl p-6 shadow-xl transition-all ${
-                        cocktail.canMake
-                          ? 'bg-gradient-to-r from-green-500 to-emerald-600'
-                          : 'bg-white bg-opacity-10 backdrop-blur-md'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <h3 className="text-2xl font-bold">{cocktail.name}</h3>
-                        {cocktail.canMake && (
-                          <div className="bg-white bg-opacity-20 rounded-full p-2">
-                            <Check />
-                          </div>
-                        )}
-                      </div>
-
-                      {!cocktail.canMake && cocktail.missingCount > 0 && (
-                        <p className="text-sm text-pink-200 mb-2">
-                          Missing {cocktail.missingCount} ingredient{cocktail.missingCount !== 1 ? 's' : ''}: {cocktail.missing.join(', ')}
-                        </p>
-                      )}
-
-                      <div className="mb-3">
-                        <p className="text-sm font-semibold mb-1">Ingredients:</p>
-                        <p className="text-sm opacity-90">{cocktail.ingredients.join(', ')}</p>
-                        {cocktail.optional && cocktail.optional.length > 0 && (
-                          <p className="text-sm opacity-75 mt-1">Optional: {cocktail.optional.join(', ')}</p>
-                        )}
-                      </div>
-
-                      <div>
-                        <p className="text-sm font-semibold mb-1">Instructions:</p>
-                        <p className="text-sm opacity-90">{cocktail.instructions}</p>
-                      </div>
-                    </div>
-                  ))}
-
-                  {myIngredients.length === 0 && (
-                    <div className="text-center py-12">
-                      <div className="mx-auto mb-4 opacity-50">
-                        <Wine />
-                      </div>
-                      <p className="text-xl text-purple-200">Add ingredients to see cocktail recommendations!</p>
+                      <button
+                        onClick={() => { setCurrentPage("cocktails"); setShowDropdown(false); }}
+                        className={`w-full text-left px-4 py-3 hover:bg-orange-600 transition-colors ${currentPage === "cocktails" ? "bg-orange-700" : ""}`}
+                      >
+                        Available Cocktails
+                      </button>
+                      <button
+                        onClick={() => { setCurrentPage("recipes"); setShowDropdown(false); }}
+                        className={`w-full text-left px-4 py-3 hover:bg-orange-600 transition-colors ${currentPage === "recipes" ? "bg-orange-700" : ""}`}
+                      >
+                        Custom Recipes
+                      </button>
                     </div>
                   )}
                 </div>
+              </div>
+
+              <div className="p-6 max-w-2xl mx-auto">
+                {/* PAGE 1: MY INGREDIENTS */}
+                {currentPage === "ingredients" && (
+                  <>
+                    <div className="rounded-2xl p-6 mb-6 shadow-xl" style={{background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'}}>
+                      <h2 className="text-xl font-semibold mb-4">Add Ingredients</h2>
+                      <div className="relative">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={newIngredient}
+                            onChange={(e) => {
+                              setNewIngredient(e.target.value);
+                              setShowSuggestions(true);
+                            }}
+                            onFocus={() => setShowSuggestions(true)}
+                            onKeyPress={(e) => e.key === 'Enter' && addIngredient(newIngredient)}
+                            placeholder="e.g., vodka, lime juice..."
+                            className="flex-1 px-4 py-3 rounded-xl bg-black bg-opacity-50 border-2 border-orange-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
+                            style={{borderColor: '#CC5500'}}
+                          />
+                          <button
+                            onClick={() => addIngredient(newIngredient)}
+                            className="px-6 py-3 rounded-xl font-semibold transition-colors shadow-lg text-white"
+                            style={{background: 'linear-gradient(135deg, #CC5500 0%, #FF6A00 100%)'}}
+                          >
+                            <Plus />
+                          </button>
+                        </div>
+
+                        {/* Suggestions Dropdown */}
+                        {showSuggestions && suggestions.length > 0 && (
+                          <div className="absolute w-full mt-2 bg-gray-900 backdrop-blur-md rounded-xl shadow-xl overflow-hidden z-20 border-2" style={{borderColor: '#CC5500'}}>
+                            {suggestions.map((suggestion, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => addIngredient(suggestion)}
+                                className="w-full text-left px-4 py-3 text-white hover:bg-orange-600 transition-colors"
+                              >
+                                {suggestion}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* My Ingredients */}
+                      <div className="mt-4">
+                        {myIngredients.length === 0 ? (
+                          <p className="text-gray-400 text-center py-4">No ingredients yet. Add some to get started!</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {myIngredients.map((ingredient, idx) => (
+                              <div
+                                key={idx}
+                                className="px-4 py-2 rounded-full flex items-center gap-2 shadow text-white"
+                                style={{background: 'linear-gradient(135deg, #CC5500 0%, #FF6A00 100%)'}}
+                              >
+                                <span className="capitalize font-medium">{ingredient}</span>
+                                <button
+                                  onClick={() => removeIngredient(ingredient)}
+                                  className="hover:bg-black hover:bg-opacity-30 rounded-full p-1 transition-colors"
+                                >
+                                  <X />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* PAGE 2: AVAILABLE COCKTAILS */}
+                {currentPage === "cocktails" && (
+                  <>
+                    {/* Stats */}
+                    <div className="rounded-2xl p-6 mb-6 shadow-xl" style={{background: 'linear-gradient(135deg, #CC5500 0%, #FF6A00 100%)'}}>
+                      <div className="text-center">
+                        <p className="text-4xl font-bold mb-2">{canMakeCount}</p>
+                        <p className="text-lg">Cocktails You Can Make Right Now</p>
+                      </div>
+                    </div>
+
+                    {/* Search */}
+                    {myIngredients.length > 0 && (
+                      <div className="mb-6">
+                        <div className="relative">
+                          <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-orange-500">
+                            <Search />
+                          </div>
+                          <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search cocktails..."
+                            className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-900 border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
+                            style={{borderColor: '#CC5500'}}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Cocktail List */}
+                    <div className="space-y-4">
+                      {filteredCocktails.map((cocktail, idx) => (
+                        <div
+                          key={idx}
+                          className="rounded-2xl p-6 shadow-xl transition-all"
+                          style={{
+                            background: cocktail.canMake
+                              ? 'linear-gradient(135deg, #1a5f1a 0%, #2d7a2d 100%)'
+                              : 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
+                          }}
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <h3 className="text-2xl font-bold text-white">{cocktail.name}</h3>
+                            {cocktail.canMake && (
+                              <div className="bg-white bg-opacity-20 rounded-full p-2">
+                                <Check />
+                              </div>
+                            )}
+                            {cocktail.isCustom && (
+                              <span className="text-xs px-3 py-1 rounded-full text-white" style={{background: '#CC5500'}}>Custom</span>
+                            )}
+                          </div>
+
+                          {!cocktail.canMake && cocktail.missingCount > 0 && (
+                            <p className="text-sm text-orange-300 mb-2">
+                              Missing {cocktail.missingCount} ingredient{cocktail.missingCount !== 1 ? 's' : ''}: {cocktail.missing.join(', ')}
+                            </p>
+                          )}
+
+                          <div className="mb-3">
+                            <p className="text-sm font-semibold mb-1 text-white">Ingredients:</p>
+                            <p className="text-sm text-gray-300">{cocktail.ingredients.join(', ')}</p>
+                            {cocktail.optional && cocktail.optional.length > 0 && (
+                              <p className="text-sm text-gray-400 mt-1">Optional: {cocktail.optional.join(', ')}</p>
+                            )}
+                          </div>
+
+                          <div>
+                            <p className="text-sm font-semibold mb-1 text-white">Instructions:</p>
+                            <p className="text-sm text-gray-300">{cocktail.instructions}</p>
+                          </div>
+                        </div>
+                      ))}
+
+                      {myIngredients.length === 0 && (
+                        <div className="text-center py-12">
+                          <div className="mx-auto mb-4 opacity-50">
+                            <Wine />
+                          </div>
+                          <p className="text-xl text-gray-400">Add ingredients to see cocktail recommendations!</p>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {/* PAGE 3: CUSTOM RECIPES */}
+                {currentPage === "recipes" && (
+                  <>
+                    <div className="rounded-2xl p-6 mb-6 shadow-xl" style={{background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'}}>
+                      <h2 className="text-xl font-semibold mb-4 text-white">Add Custom Recipe</h2>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-2 text-gray-300">Recipe Name</label>
+                          <input
+                            type="text"
+                            value={newRecipeName}
+                            onChange={(e) => setNewRecipeName(e.target.value)}
+                            placeholder="e.g., My Special Margarita"
+                            className="w-full px-4 py-3 rounded-xl bg-black bg-opacity-50 border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
+                            style={{borderColor: '#CC5500'}}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium mb-2 text-gray-300">Ingredients (comma separated)</label>
+                          <input
+                            type="text"
+                            value={newRecipeIngredients}
+                            onChange={(e) => setNewRecipeIngredients(e.target.value)}
+                            placeholder="e.g., tequila, lime juice, salt"
+                            className="w-full px-4 py-3 rounded-xl bg-black bg-opacity-50 border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
+                            style={{borderColor: '#CC5500'}}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium mb-2 text-gray-300">Instructions</label>
+                          <textarea
+                            value={newRecipeInstructions}
+                            onChange={(e) => setNewRecipeInstructions(e.target.value)}
+                            placeholder="Describe how to make this cocktail..."
+                            rows="4"
+                            className="w-full px-4 py-3 rounded-xl bg-black bg-opacity-50 border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white resize-none"
+                            style={{borderColor: '#CC5500'}}
+                          />
+                        </div>
+
+                        <button
+                          onClick={addCustomRecipe}
+                          className="w-full py-3 rounded-xl font-semibold transition-colors shadow-lg text-white"
+                          style={{background: 'linear-gradient(135deg, #CC5500 0%, #FF6A00 100%)'}}
+                        >
+                          Add Recipe
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Custom Recipes List */}
+                    <div className="space-y-4">
+                      <h2 className="text-xl font-semibold text-white">Your Custom Recipes</h2>
+                      {customRecipes.length === 0 ? (
+                        <p className="text-gray-400 text-center py-8">No custom recipes yet. Add your first recipe above!</p>
+                      ) : (
+                        customRecipes.map((recipe, idx) => (
+                          <div
+                            key={idx}
+                            className="rounded-2xl p-6 shadow-xl"
+                            style={{background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'}}
+                          >
+                            <div className="flex items-start justify-between mb-3">
+                              <h3 className="text-2xl font-bold text-white">{recipe.name}</h3>
+                              <button
+                                onClick={() => deleteCustomRecipe(idx)}
+                                className="bg-red-600 hover:bg-red-700 rounded-full p-2 transition-colors"
+                              >
+                                <X />
+                              </button>
+                            </div>
+
+                            <div className="mb-3">
+                              <p className="text-sm font-semibold mb-1 text-white">Ingredients:</p>
+                              <p className="text-sm text-gray-300">{recipe.ingredients.join(', ')}</p>
+                            </div>
+
+                            <div>
+                              <p className="text-sm font-semibold mb-1 text-white">Instructions:</p>
+                              <p className="text-sm text-gray-300">{recipe.instructions}</p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           );
