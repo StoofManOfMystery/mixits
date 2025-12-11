@@ -655,6 +655,7 @@
           const [searchQuery, setSearchQuery] = useState("");
           const [currentPage, setCurrentPage] = useState("ingredients");
           const [customRecipes, setCustomRecipes] = useState([]);
+          const [customIngredients, setCustomIngredients] = useState([]);
           const [showDropdown, setShowDropdown] = useState(false);
 
           // New recipe form state
@@ -662,7 +663,7 @@
           const [newRecipeIngredients, setNewRecipeIngredients] = useState("");
           const [newRecipeInstructions, setNewRecipeInstructions] = useState("");
 
-          // Load ingredients and custom recipes from memory on mount
+          // Load ingredients, custom ingredients, and custom recipes from memory on mount
           useEffect(() => {
             const saved = localStorage.getItem('myIngredients');
             if (saved) {
@@ -671,6 +672,10 @@
             const savedRecipes = localStorage.getItem('customRecipes');
             if (savedRecipes) {
               setCustomRecipes(JSON.parse(savedRecipes));
+            }
+            const savedCustomIngredients = localStorage.getItem('customIngredients');
+            if (savedCustomIngredients) {
+              setCustomIngredients(JSON.parse(savedCustomIngredients));
             }
           }, []);
 
@@ -684,10 +689,16 @@
             localStorage.setItem('customRecipes', JSON.stringify(customRecipes));
           }, [customRecipes]);
 
-          // Filter suggestions based on input
+          // Save custom ingredients to memory whenever they change
+          useEffect(() => {
+            localStorage.setItem('customIngredients', JSON.stringify(customIngredients));
+          }, [customIngredients]);
+
+          // Filter suggestions based on input (combine built-in and custom ingredients)
           useEffect(() => {
             if (newIngredient.trim().length > 0) {
-              const filtered = COMMON_INGREDIENTS.filter(ing => 
+              const allIngredients = [...COMMON_INGREDIENTS, ...customIngredients];
+              const filtered = allIngredients.filter(ing =>
                 ing.toLowerCase().includes(newIngredient.toLowerCase()) &&
                 !myIngredients.some(myIng => myIng.toLowerCase() === ing.toLowerCase())
               ).slice(0, 5);
@@ -695,12 +706,20 @@
             } else {
               setSuggestions([]);
             }
-          }, [newIngredient, myIngredients]);
+          }, [newIngredient, myIngredients, customIngredients]);
 
           const addIngredient = (ingredient) => {
             const trimmed = ingredient.trim().toLowerCase();
             if (trimmed && !myIngredients.some(ing => ing.toLowerCase() === trimmed)) {
               setMyIngredients([...myIngredients, trimmed]);
+
+              // If this is a new custom ingredient, add it to the autocomplete list
+              const isBuiltIn = COMMON_INGREDIENTS.some(ing => ing.toLowerCase() === trimmed);
+              const isCustom = customIngredients.some(ing => ing.toLowerCase() === trimmed);
+              if (!isBuiltIn && !isCustom) {
+                setCustomIngredients([...customIngredients, trimmed]);
+              }
+
               setNewIngredient("");
               setSuggestions([]);
               setShowSuggestions(false);
