@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#291502">
-    <title>My Cocktail Bar</title>
+    <meta name="theme-color" content="#1a1a2e">
+    <title>RateMyMusic</title>
     <link rel="manifest" href="manifest.json">
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- React and ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
+
     <!-- Babel for JSX transformation -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
+
     <style>
         body {
             margin: 0;
@@ -28,37 +28,59 @@
                 sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            background: #291502;
+            background: #1a1a2e;
         }
 
         #root {
             min-height: 100vh;
         }
 
-        /* Wood grain texture effect */
-        .wood-bg {
-            background:
-                linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.15) 50%, transparent 100%),
-                repeating-linear-gradient(
-                    90deg,
-                    #3a1f03 0px,
-                    #4a2804 2px,
-                    #3a1f03 4px,
-                    #291502 6px,
-                    #3a1f03 8px
-                ),
-                linear-gradient(180deg, #3a1f03 0%, #291502 100%);
+        /* Gradient background effect */
+        .music-bg {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
         }
 
-        .wood-card {
-            background:
-                linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.08) 50%, transparent 100%),
-                linear-gradient(180deg, #4a2804 0%, #3a1f03 50%, #4a2804 100%);
+        .card-gradient {
+            background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+        }
+
+        /* Rating stars/slider styling */
+        .rating-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
+        }
+
+        .rating-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
         }
 
         /* Prevent zoom on input focus for iOS */
-        input {
+        input, textarea, select {
             font-size: 16px !important;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a2e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e94560;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -66,1045 +88,1344 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
-        
-        // Lucide React icons as inline SVG components
-        const Plus = () => (
+        const { useState, useEffect, useCallback } = React;
+
+        // Icon Components
+        const Music = () => (
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <path d="M9 18V5l12-2v13"></path>
+                <circle cx="6" cy="18" r="3"></circle>
+                <circle cx="18" cy="16" r="3"></circle>
             </svg>
         );
-        
-        const X = () => (
+
+        const Disc = () => (
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="3"></circle>
             </svg>
         );
-        
-        const Wine = () => (
+
+        const User = () => (
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M8 22h8"></path>
-                <path d="M12 15v7"></path>
-                <path d="M12 15c3.314 0 6-2.686 6-6V5c0-1.105-.895-2-2-2H8c-1.105 0-2 .895-2 2v4c0 3.314 2.686 6 6 6z"></path>
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
             </svg>
         );
-        
+
+        const Users = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+        );
+
         const Search = () => (
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
         );
-        
-        const Check = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
+
+        const Star = ({ filled }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill={filled ? "#e94560" : "none"} stroke="#e94560" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
             </svg>
         );
 
-        const ChevronDown = () => (
+        const Plus = () => (
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="6 9 12 15 18 9"></polyline>
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
         );
 
-        // Comprehensive cocktail database
-        const COCKTAIL_DATABASE = [
-          {
-            name: "Margarita",
-            ingredients: ["tequila", "lime juice", "triple sec", "salt"],
-            optional: ["agave syrup"],
-            instructions: "Rub lime around rim and dip in salt. Shake tequila, lime juice, and triple sec with ice. Strain into glass."
-          },
-          {
-            name: "Mojito",
-            ingredients: ["white rum", "lime juice", "mint", "sugar", "soda water"],
-            instructions: "Muddle mint with sugar and lime juice. Add rum and ice. Top with soda water."
-          },
-          {
-            name: "Old Fashioned",
-            ingredients: ["bourbon", "sugar", "bitters"],
-            optional: ["orange peel"],
-            instructions: "Muddle sugar with bitters. Add bourbon and ice. Stir. Garnish with orange peel."
-          },
-          {
-            name: "Martini",
-            ingredients: ["gin", "dry vermouth"],
-            optional: ["olive", "lemon twist"],
-            instructions: "Stir gin and vermouth with ice. Strain into chilled glass. Garnish with olive or lemon twist."
-          },
-          {
-            name: "Manhattan",
-            ingredients: ["whiskey", "sweet vermouth", "bitters"],
-            optional: ["cherry"],
-            instructions: "Stir whiskey, vermouth, and bitters with ice. Strain into glass. Garnish with cherry."
-          },
-          {
-            name: "Daiquiri",
-            ingredients: ["white rum", "lime juice", "sugar"],
-            instructions: "Shake rum, lime juice, and sugar with ice. Strain into chilled glass."
-          },
-          {
-            name: "Cosmopolitan",
-            ingredients: ["vodka", "triple sec", "lime juice", "cranberry juice"],
-            instructions: "Shake all ingredients with ice. Strain into chilled martini glass."
-          },
-          {
-            name: "Moscow Mule",
-            ingredients: ["vodka", "ginger beer", "lime juice"],
-            instructions: "Fill copper mug with ice. Add vodka and lime juice. Top with ginger beer."
-          },
-          {
-            name: "Whiskey Sour",
-            ingredients: ["whiskey", "lemon juice", "sugar"],
-            optional: ["egg white", "cherry"],
-            instructions: "Shake whiskey, lemon juice, and sugar with ice. Strain into glass."
-          },
-          {
-            name: "Negroni",
-            ingredients: ["gin", "campari", "sweet vermouth"],
-            optional: ["orange peel"],
-            instructions: "Stir equal parts gin, Campari, and vermouth with ice. Strain into glass with ice."
-          },
-          {
-            name: "Gin and Tonic",
-            ingredients: ["gin", "tonic water"],
-            optional: ["lime"],
-            instructions: "Fill glass with ice. Add gin and top with tonic water. Garnish with lime."
-          },
-          {
-            name: "Rum and Coke",
-            ingredients: ["rum", "cola"],
-            optional: ["lime"],
-            instructions: "Fill glass with ice. Add rum and top with cola. Squeeze lime wedge."
-          },
-          {
-            name: "Piña Colada",
-            ingredients: ["white rum", "coconut cream", "pineapple juice"],
-            instructions: "Blend rum, coconut cream, and pineapple juice with ice until smooth."
-          },
-          {
-            name: "Bloody Mary",
-            ingredients: ["vodka", "tomato juice", "lemon juice", "worcestershire sauce", "hot sauce", "salt", "pepper"],
-            optional: ["celery"],
-            instructions: "Combine all ingredients in glass with ice. Stir well. Garnish with celery."
-          },
-          {
-            name: "Aperol Spritz",
-            ingredients: ["aperol", "prosecco", "soda water"],
-            optional: ["orange"],
-            instructions: "Fill glass with ice. Add Aperol, prosecco, and splash of soda. Garnish with orange slice."
-          },
-          {
-            name: "Mai Tai",
-            ingredients: ["white rum", "dark rum", "orange curacao", "lime juice", "orgeat syrup"],
-            instructions: "Shake white rum, curacao, lime juice, and orgeat with ice. Pour into glass and float dark rum on top."
-          },
-          {
-            name: "Espresso Martini",
-            ingredients: ["vodka", "coffee liqueur", "espresso", "sugar"],
-            instructions: "Shake vodka, coffee liqueur, espresso, and sugar with ice. Strain into chilled martini glass."
-          },
-          {
-            name: "Tom Collins",
-            ingredients: ["gin", "lemon juice", "sugar", "soda water"],
-            optional: ["cherry", "lemon"],
-            instructions: "Shake gin, lemon juice, and sugar with ice. Strain into glass with ice and top with soda water."
-          },
-          {
-            name: "Paloma",
-            ingredients: ["tequila", "grapefruit soda", "lime juice", "salt"],
-            instructions: "Rim glass with salt. Fill with ice, add tequila and lime juice. Top with grapefruit soda."
-          },
-          {
-            name: "Irish Coffee",
-            ingredients: ["irish whiskey", "coffee", "sugar", "cream"],
-            instructions: "Add whiskey and sugar to hot coffee. Stir. Top with lightly whipped cream."
-          },
-          {
-            name: "Blue Lagoon",
-            ingredients: ["vodka", "blue curacao", "lemonade"],
-            optional: ["lemon", "cherry"],
-            instructions: "Fill glass with ice. Add vodka and blue curacao. Top with lemonade. Garnish with lemon and cherry."
-          },
-          {
-            name: "Blue Hawaiian",
-            ingredients: ["white rum", "blue curacao", "pineapple juice", "coconut cream"],
-            instructions: "Blend rum, blue curacao, pineapple juice, and coconut cream with ice until smooth."
-          },
-          {
-            name: "Electric Lemonade",
-            ingredients: ["vodka", "blue curacao", "lemonade", "sprite"],
-            instructions: "Fill glass with ice. Add vodka and blue curacao. Add lemonade and top with Sprite."
-          },
-          {
-            name: "Swimming Pool",
-            ingredients: ["vodka", "blue curacao", "coconut cream", "pineapple juice", "cream"],
-            instructions: "Blend vodka, pineapple juice, and coconut cream with ice. Pour blue curacao in center, add cream on top."
-          },
-          {
-            name: "Blue Margarita",
-            ingredients: ["tequila", "blue curacao", "lime juice", "salt"],
-            instructions: "Rim glass with salt. Shake tequila, blue curacao, and lime juice with ice. Strain into glass."
-          },
-          {
-            name: "Long Island Iced Tea",
-            ingredients: ["vodka", "white rum", "gin", "tequila", "triple sec", "lemon juice", "simple syrup", "cola"],
-            instructions: "Shake all spirits, lemon juice, and syrup with ice. Strain into glass with ice. Top with cola."
-          },
-          {
-            name: "Kamikaze",
-            ingredients: ["vodka", "triple sec", "lime juice"],
-            instructions: "Shake vodka, triple sec, and lime juice with ice. Strain into shot glass or rocks glass."
-          },
-          {
-            name: "Sidecar",
-            ingredients: ["cognac", "triple sec", "lemon juice", "sugar"],
-            optional: ["orange peel"],
-            instructions: "Rim glass with sugar. Shake cognac, triple sec, and lemon juice with ice. Strain into glass."
-          },
-          {
-            name: "White Lady",
-            ingredients: ["gin", "triple sec", "lemon juice"],
-            optional: ["egg white"],
-            instructions: "Shake gin, triple sec, and lemon juice with ice. Strain into chilled glass."
-          },
-          {
-            name: "Between the Sheets",
-            ingredients: ["cognac", "white rum", "triple sec", "lemon juice"],
-            instructions: "Shake all ingredients with ice. Strain into chilled glass."
-          },
-          {
-            name: "Sake Bomb",
-            ingredients: ["sake", "beer"],
-            instructions: "Drop shot of sake into glass of beer. Drink immediately."
-          },
-          {
-            name: "Sake Martini",
-            ingredients: ["sake", "gin", "dry vermouth"],
-            optional: ["lemon twist"],
-            instructions: "Stir sake, gin, and vermouth with ice. Strain into chilled glass. Garnish with lemon twist."
-          },
-          {
-            name: "Saketini",
-            ingredients: ["sake", "vodka"],
-            optional: ["cucumber", "lemon twist"],
-            instructions: "Stir sake and vodka with ice. Strain into chilled glass. Garnish with cucumber or lemon."
-          },
-          {
-            name: "Japanese Slipper",
-            ingredients: ["midori", "triple sec", "lemon juice"],
-            instructions: "Shake midori, triple sec, and lemon juice with ice. Strain into glass."
-          },
-          {
-            name: "Lychee Sake Martini",
-            ingredients: ["sake", "vodka", "lychee liqueur", "lychee juice"],
-            optional: ["lychee fruit"],
-            instructions: "Shake sake, vodka, lychee liqueur, and juice with ice. Strain into glass. Garnish with lychee."
-          },
-          {
-            name: "Michelada",
-            ingredients: ["beer", "lime juice", "hot sauce", "worcestershire sauce", "salt"],
-            instructions: "Rim glass with salt. Add lime juice, hot sauce, and worcestershire. Fill with beer over ice."
-          },
-          {
-            name: "Shandy",
-            ingredients: ["beer", "lemonade"],
-            instructions: "Fill glass half with beer, half with lemonade. Stir gently."
-          },
-          {
-            name: "Black Velvet",
-            ingredients: ["champagne", "stout beer"],
-            instructions: "Pour equal parts champagne and stout beer into glass. Do not stir."
-          },
-          {
-            name: "Irish Car Bomb",
-            ingredients: ["irish whiskey", "irish cream", "stout beer"],
-            instructions: "Drop shot of Irish whiskey and Irish cream into half pint of stout. Drink immediately."
-          },
-          {
-            name: "Boilermaker",
-            ingredients: ["whiskey", "beer"],
-            instructions: "Drop shot of whiskey into beer, or drink whiskey shot followed by beer."
-          },
-          {
-            name: "Tequila Sunrise",
-            ingredients: ["tequila", "orange juice", "grenadine"],
-            optional: ["orange", "cherry"],
-            instructions: "Fill glass with ice. Add tequila and orange juice. Slowly pour grenadine to create sunrise effect."
-          },
-          {
-            name: "Sex on the Beach",
-            ingredients: ["vodka", "peach schnapps", "orange juice", "cranberry juice"],
-            instructions: "Shake all ingredients with ice. Strain into glass with ice."
-          },
-          {
-            name: "Bahama Mama",
-            ingredients: ["dark rum", "coconut rum", "grenadine", "orange juice", "pineapple juice"],
-            instructions: "Shake all ingredients with ice. Strain into glass with ice."
-          },
-          {
-            name: "Blue Motorcycle",
-            ingredients: ["vodka", "gin", "white rum", "tequila", "blue curacao", "lemon juice", "sprite"],
-            instructions: "Shake all spirits and lemon juice with ice. Strain into glass with ice. Top with Sprite."
-          },
-          {
-            name: "Zombie",
-            ingredients: ["white rum", "dark rum", "151 rum", "lime juice", "orange juice", "pineapple juice", "grenadine"],
-            instructions: "Shake all ingredients with ice. Strain into tall glass. Float 151 rum on top."
-          },
-          {
-            name: "Hurricane",
-            ingredients: ["white rum", "dark rum", "passion fruit syrup", "lime juice", "orange juice"],
-            instructions: "Shake all ingredients with ice. Strain into hurricane glass with ice."
-          },
-          {
-            name: "Dark and Stormy",
-            ingredients: ["dark rum", "ginger beer", "lime juice"],
-            instructions: "Fill glass with ice. Add rum and lime juice. Top with ginger beer."
-          },
-          {
-            name: "Cuba Libre",
-            ingredients: ["white rum", "cola", "lime juice"],
-            instructions: "Fill glass with ice. Add rum and lime juice. Top with cola. Garnish with lime."
-          },
-          {
-            name: "Mojito Royale",
-            ingredients: ["white rum", "mint", "lime juice", "sugar", "champagne"],
-            instructions: "Muddle mint with sugar and lime juice. Add rum and ice. Top with champagne."
-          },
-          {
-            name: "French 75",
-            ingredients: ["gin", "lemon juice", "sugar", "champagne"],
-            instructions: "Shake gin, lemon juice, and sugar with ice. Strain into glass. Top with champagne."
-          },
-          {
-            name: "Kir Royale",
-            ingredients: ["champagne", "chambord"],
-            instructions: "Pour chambord into champagne flute. Top with champagne."
-          },
-          {
-            name: "Bellini",
-            ingredients: ["prosecco", "peach puree"],
-            instructions: "Pour peach puree into champagne flute. Top with prosecco. Stir gently."
-          },
-          {
-            name: "Mimosa",
-            ingredients: ["champagne", "orange juice"],
-            instructions: "Pour equal parts champagne and orange juice into champagne flute."
-          },
-          {
-            name: "B-52",
-            ingredients: ["coffee liqueur", "irish cream", "triple sec"],
-            instructions: "Layer coffee liqueur, then Irish cream, then triple sec in shot glass."
-          },
-          {
-            name: "Mudslide",
-            ingredients: ["vodka", "coffee liqueur", "irish cream"],
-            optional: ["cream"],
-            instructions: "Shake vodka, coffee liqueur, and Irish cream with ice. Strain into glass."
-          },
-          {
-            name: "White Russian",
-            ingredients: ["vodka", "coffee liqueur", "cream"],
-            instructions: "Add vodka and coffee liqueur to glass with ice. Float cream on top."
-          },
-          {
-            name: "Black Russian",
-            ingredients: ["vodka", "coffee liqueur"],
-            instructions: "Pour vodka and coffee liqueur over ice. Stir."
-          },
-          {
-            name: "Godfather",
-            ingredients: ["scotch", "amaretto"],
-            instructions: "Pour scotch and amaretto over ice. Stir."
-          },
-          {
-            name: "Godmother",
-            ingredients: ["vodka", "amaretto"],
-            instructions: "Pour vodka and amaretto over ice. Stir."
-          },
-          {
-            name: "Amaretto Sour",
-            ingredients: ["amaretto", "lemon juice", "sugar"],
-            optional: ["cherry", "orange"],
-            instructions: "Shake amaretto, lemon juice, and sugar with ice. Strain into glass."
-          },
-          {
-            name: "Screwdriver",
-            ingredients: ["vodka", "orange juice"],
-            instructions: "Fill glass with ice. Add vodka and top with orange juice. Stir."
-          },
-          {
-            name: "Greyhound",
-            ingredients: ["vodka", "grapefruit juice"],
-            instructions: "Fill glass with ice. Add vodka and top with grapefruit juice. Stir."
-          },
-          {
-            name: "Salty Dog",
-            ingredients: ["vodka", "grapefruit juice", "salt"],
-            instructions: "Rim glass with salt. Fill with ice. Add vodka and grapefruit juice. Stir."
-          },
-          {
-            name: "Vodka Tonic",
-            ingredients: ["vodka", "tonic water"],
-            optional: ["lime"],
-            instructions: "Fill glass with ice. Add vodka and top with tonic water. Garnish with lime."
-          },
-          {
-            name: "Cape Codder",
-            ingredients: ["vodka", "cranberry juice"],
-            optional: ["lime"],
-            instructions: "Fill glass with ice. Add vodka and cranberry juice. Garnish with lime."
-          },
-          {
-            name: "Sea Breeze",
-            ingredients: ["vodka", "cranberry juice", "grapefruit juice"],
-            instructions: "Fill glass with ice. Add vodka, cranberry juice, and grapefruit juice. Stir."
-          },
-          {
-            name: "Bay Breeze",
-            ingredients: ["vodka", "cranberry juice", "pineapple juice"],
-            instructions: "Fill glass with ice. Add vodka, cranberry juice, and pineapple juice. Stir."
-          },
-          {
-            name: "Madras",
-            ingredients: ["vodka", "cranberry juice", "orange juice"],
-            instructions: "Fill glass with ice. Add vodka, cranberry juice, and orange juice. Stir."
-          },
-          {
-            name: "Woo Woo",
-            ingredients: ["vodka", "peach schnapps", "cranberry juice"],
-            instructions: "Shake all ingredients with ice. Strain into glass."
-          },
-          {
-            name: "Fuzzy Navel",
-            ingredients: ["peach schnapps", "orange juice"],
-            instructions: "Fill glass with ice. Add peach schnapps and orange juice. Stir."
-          },
-          {
-            name: "Hairy Navel",
-            ingredients: ["vodka", "peach schnapps", "orange juice"],
-            instructions: "Fill glass with ice. Add vodka, peach schnapps, and orange juice. Stir."
-          },
-          {
-            name: "Melon Ball",
-            ingredients: ["vodka", "midori", "orange juice"],
-            instructions: "Shake all ingredients with ice. Strain into glass."
-          },
-          {
-            name: "Tokyo Tea",
-            ingredients: ["vodka", "gin", "white rum", "triple sec", "midori", "lemon juice", "sprite"],
-            instructions: "Shake all spirits and lemon juice with ice. Strain into glass. Top with Sprite."
-          },
-          {
-            name: "Green Tea Shot",
-            ingredients: ["jameson", "peach schnapps", "sour mix", "sprite"],
-            instructions: "Shake whiskey, schnapps, and sour mix with ice. Strain into shot glass. Top with splash of Sprite."
-          },
-          {
-            name: "Lemon Drop",
-            ingredients: ["vodka", "triple sec", "lemon juice", "sugar"],
-            instructions: "Rim glass with sugar. Shake vodka, triple sec, and lemon juice with ice. Strain into glass."
-          },
-          {
-            name: "Appletini",
-            ingredients: ["vodka", "apple schnapps", "triple sec"],
-            optional: ["apple slice"],
-            instructions: "Shake vodka, apple schnapps, and triple sec with ice. Strain into chilled glass."
-          },
-          {
-            name: "Chocolate Martini",
-            ingredients: ["vodka", "chocolate liqueur", "cream"],
-            instructions: "Shake vodka, chocolate liqueur, and cream with ice. Strain into chilled glass."
-          },
-          {
-            name: "French Martini",
-            ingredients: ["vodka", "chambord", "pineapple juice"],
-            instructions: "Shake vodka, chambord, and pineapple juice with ice. Strain into chilled glass."
-          },
-          {
-            name: "Pornstar Martini",
-            ingredients: ["vodka", "vanilla vodka", "passion fruit liqueur", "passion fruit puree", "lime juice", "sugar"],
-            optional: ["prosecco"],
-            instructions: "Shake vodkas, liqueur, puree, lime juice, and sugar with ice. Strain into glass. Serve with shot of prosecco."
-          },
-          {
-            name: "Corpse Reviver #2",
-            ingredients: ["gin", "triple sec", "lillet blanc", "lemon juice", "absinthe"],
-            instructions: "Rinse glass with absinthe. Shake gin, triple sec, Lillet, and lemon juice with ice. Strain into glass."
-          },
-          {
-            name: "Aviation",
-            ingredients: ["gin", "maraschino liqueur", "lemon juice", "creme de violette"],
-            instructions: "Shake all ingredients with ice. Strain into chilled glass."
-          },
-          {
-            name: "Last Word",
-            ingredients: ["gin", "green chartreuse", "maraschino liqueur", "lime juice"],
-            instructions: "Shake equal parts of all ingredients with ice. Strain into chilled glass."
-          },
-          {
-            name: "Bramble",
-            ingredients: ["gin", "lemon juice", "sugar", "creme de mure"],
-            optional: ["blackberry"],
-            instructions: "Shake gin, lemon juice, and sugar with ice. Strain over crushed ice. Drizzle creme de mure on top."
-          },
-          {
-            name: "Gimlet",
-            ingredients: ["gin", "lime juice", "sugar"],
-            instructions: "Shake gin, lime juice, and sugar with ice. Strain into chilled glass."
-          },
-          {
-            name: "Southside",
-            ingredients: ["gin", "lime juice", "sugar", "mint"],
-            instructions: "Shake gin, lime juice, sugar, and mint with ice. Strain into chilled glass."
-          },
-          {
-            name: "Bee's Knees",
-            ingredients: ["gin", "lemon juice", "honey syrup"],
-            instructions: "Shake gin, lemon juice, and honey syrup with ice. Strain into chilled glass."
-          },
-          {
-            name: "Boulevardier",
-            ingredients: ["bourbon", "campari", "sweet vermouth"],
-            instructions: "Stir bourbon, Campari, and vermouth with ice. Strain into glass with ice."
-          },
-          {
-            name: "Sazerac",
-            ingredients: ["rye whiskey", "sugar", "peychaud's bitters", "absinthe"],
-            optional: ["lemon peel"],
-            instructions: "Rinse glass with absinthe. Muddle sugar and bitters. Add whiskey and ice. Stir. Strain into absinthe-rinsed glass."
-          },
-          {
-            name: "Mint Julep",
-            ingredients: ["bourbon", "mint", "sugar", "water"],
-            instructions: "Muddle mint with sugar and water. Add bourbon and crushed ice. Stir until glass frosts."
-          },
-          {
-            name: "Rob Roy",
-            ingredients: ["scotch", "sweet vermouth", "bitters"],
-            optional: ["cherry"],
-            instructions: "Stir scotch, vermouth, and bitters with ice. Strain into glass. Garnish with cherry."
-          },
-          {
-            name: "Rusty Nail",
-            ingredients: ["scotch", "drambuie"],
-            instructions: "Pour scotch and Drambuie over ice. Stir."
-          },
-          {
-            name: "Blood and Sand",
-            ingredients: ["scotch", "cherry liqueur", "sweet vermouth", "orange juice"],
-            instructions: "Shake equal parts of all ingredients with ice. Strain into chilled glass."
-          },
-          {
-            name: "Penicillin",
-            ingredients: ["scotch", "islay scotch", "lemon juice", "honey syrup", "ginger"],
-            instructions: "Shake scotch, lemon juice, honey syrup, and ginger with ice. Strain into glass. Float Islay scotch on top."
-          }
+        const X = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        );
+
+        const Home = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+        );
+
+        const MessageCircle = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+        );
+
+        const LogOut = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+        );
+
+        const ChevronLeft = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        );
+
+        const UserPlus = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <line x1="20" y1="8" x2="20" y2="14"></line>
+                <line x1="23" y1="11" x2="17" y2="11"></line>
+            </svg>
+        );
+
+        const UserMinus = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <line x1="23" y1="11" x2="17" y2="11"></line>
+            </svg>
+        );
+
+        // Sample Album Database
+        const ALBUM_DATABASE = [
+            {
+                id: 1,
+                name: "Abbey Road",
+                artist: "The Beatles",
+                year: 1969,
+                cover: "https://upload.wikimedia.org/wikipedia/en/4/42/Beatles_-_Abbey_Road.jpg",
+                genre: "Rock",
+                songs: [
+                    { id: 1, name: "Come Together", duration: "4:20" },
+                    { id: 2, name: "Something", duration: "3:03" },
+                    { id: 3, name: "Maxwell's Silver Hammer", duration: "3:27" },
+                    { id: 4, name: "Oh! Darling", duration: "3:27" },
+                    { id: 5, name: "Octopus's Garden", duration: "2:51" },
+                    { id: 6, name: "I Want You (She's So Heavy)", duration: "7:47" },
+                    { id: 7, name: "Here Comes the Sun", duration: "3:05" },
+                    { id: 8, name: "Because", duration: "2:45" },
+                    { id: 9, name: "You Never Give Me Your Money", duration: "4:02" },
+                    { id: 10, name: "Sun King", duration: "2:26" },
+                    { id: 11, name: "Mean Mr. Mustard", duration: "1:06" },
+                    { id: 12, name: "Polythene Pam", duration: "1:12" },
+                    { id: 13, name: "She Came In Through the Bathroom Window", duration: "1:57" },
+                    { id: 14, name: "Golden Slumbers", duration: "1:31" },
+                    { id: 15, name: "Carry That Weight", duration: "1:36" },
+                    { id: 16, name: "The End", duration: "2:19" },
+                    { id: 17, name: "Her Majesty", duration: "0:23" }
+                ]
+            },
+            {
+                id: 2,
+                name: "Thriller",
+                artist: "Michael Jackson",
+                year: 1982,
+                cover: "https://upload.wikimedia.org/wikipedia/en/5/55/Michael_Jackson_-_Thriller.png",
+                genre: "Pop",
+                songs: [
+                    { id: 1, name: "Wanna Be Startin' Somethin'", duration: "6:03" },
+                    { id: 2, name: "Baby Be Mine", duration: "4:20" },
+                    { id: 3, name: "The Girl Is Mine", duration: "3:42" },
+                    { id: 4, name: "Thriller", duration: "5:57" },
+                    { id: 5, name: "Beat It", duration: "4:18" },
+                    { id: 6, name: "Billie Jean", duration: "4:54" },
+                    { id: 7, name: "Human Nature", duration: "4:06" },
+                    { id: 8, name: "P.Y.T. (Pretty Young Thing)", duration: "3:59" },
+                    { id: 9, name: "The Lady in My Life", duration: "5:00" }
+                ]
+            },
+            {
+                id: 3,
+                name: "The Dark Side of the Moon",
+                artist: "Pink Floyd",
+                year: 1973,
+                cover: "https://upload.wikimedia.org/wikipedia/en/3/3b/Dark_Side_of_the_Moon.png",
+                genre: "Progressive Rock",
+                songs: [
+                    { id: 1, name: "Speak to Me", duration: "1:30" },
+                    { id: 2, name: "Breathe (In the Air)", duration: "2:43" },
+                    { id: 3, name: "On the Run", duration: "3:36" },
+                    { id: 4, name: "Time", duration: "7:01" },
+                    { id: 5, name: "The Great Gig in the Sky", duration: "4:47" },
+                    { id: 6, name: "Money", duration: "6:22" },
+                    { id: 7, name: "Us and Them", duration: "7:49" },
+                    { id: 8, name: "Any Colour You Like", duration: "3:26" },
+                    { id: 9, name: "Brain Damage", duration: "3:50" },
+                    { id: 10, name: "Eclipse", duration: "2:03" }
+                ]
+            },
+            {
+                id: 4,
+                name: "Back in Black",
+                artist: "AC/DC",
+                year: 1980,
+                cover: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/ACDC_Back_in_Black.png/220px-ACDC_Back_in_Black.png",
+                genre: "Hard Rock",
+                songs: [
+                    { id: 1, name: "Hells Bells", duration: "5:12" },
+                    { id: 2, name: "Shoot to Thrill", duration: "5:17" },
+                    { id: 3, name: "What Do You Do for Money Honey", duration: "3:35" },
+                    { id: 4, name: "Given the Dog a Bone", duration: "3:31" },
+                    { id: 5, name: "Let Me Put My Love into You", duration: "4:15" },
+                    { id: 6, name: "Back in Black", duration: "4:15" },
+                    { id: 7, name: "You Shook Me All Night Long", duration: "3:30" },
+                    { id: 8, name: "Have a Drink on Me", duration: "3:58" },
+                    { id: 9, name: "Shake a Leg", duration: "4:05" },
+                    { id: 10, name: "Rock and Roll Ain't Noise Pollution", duration: "4:15" }
+                ]
+            },
+            {
+                id: 5,
+                name: "Rumours",
+                artist: "Fleetwood Mac",
+                year: 1977,
+                cover: "https://upload.wikimedia.org/wikipedia/en/f/fb/FMacRumworz.png",
+                genre: "Soft Rock",
+                songs: [
+                    { id: 1, name: "Second Hand News", duration: "2:56" },
+                    { id: 2, name: "Dreams", duration: "4:14" },
+                    { id: 3, name: "Never Going Back Again", duration: "2:14" },
+                    { id: 4, name: "Don't Stop", duration: "3:13" },
+                    { id: 5, name: "Go Your Own Way", duration: "3:38" },
+                    { id: 6, name: "Songbird", duration: "3:20" },
+                    { id: 7, name: "The Chain", duration: "4:30" },
+                    { id: 8, name: "You Make Loving Fun", duration: "3:31" },
+                    { id: 9, name: "I Don't Want to Know", duration: "3:15" },
+                    { id: 10, name: "Oh Daddy", duration: "3:56" },
+                    { id: 11, name: "Gold Dust Woman", duration: "4:56" }
+                ]
+            },
+            {
+                id: 6,
+                name: "Nevermind",
+                artist: "Nirvana",
+                year: 1991,
+                cover: "https://upload.wikimedia.org/wikipedia/en/b/b7/NirsleevNavanirmind.jpg",
+                genre: "Grunge",
+                songs: [
+                    { id: 1, name: "Smells Like Teen Spirit", duration: "5:01" },
+                    { id: 2, name: "In Bloom", duration: "4:15" },
+                    { id: 3, name: "Come as You Are", duration: "3:38" },
+                    { id: 4, name: "Breed", duration: "3:03" },
+                    { id: 5, name: "Lithium", duration: "4:17" },
+                    { id: 6, name: "Polly", duration: "2:57" },
+                    { id: 7, name: "Territorial Pissings", duration: "2:22" },
+                    { id: 8, name: "Drain You", duration: "3:43" },
+                    { id: 9, name: "Lounge Act", duration: "2:36" },
+                    { id: 10, name: "Stay Away", duration: "3:32" },
+                    { id: 11, name: "On a Plain", duration: "3:16" },
+                    { id: 12, name: "Something in the Way", duration: "3:52" }
+                ]
+            },
+            {
+                id: 7,
+                name: "21",
+                artist: "Adele",
+                year: 2011,
+                cover: "https://upload.wikimedia.org/wikipedia/en/1/1b/Adele_-_21.png",
+                genre: "Pop/Soul",
+                songs: [
+                    { id: 1, name: "Rolling in the Deep", duration: "3:48" },
+                    { id: 2, name: "Rumour Has It", duration: "3:43" },
+                    { id: 3, name: "Turning Tables", duration: "4:10" },
+                    { id: 4, name: "Don't You Remember", duration: "4:03" },
+                    { id: 5, name: "Set Fire to the Rain", duration: "4:01" },
+                    { id: 6, name: "He Won't Go", duration: "4:38" },
+                    { id: 7, name: "Take It All", duration: "3:48" },
+                    { id: 8, name: "I'll Be Waiting", duration: "4:01" },
+                    { id: 9, name: "One and Only", duration: "5:48" },
+                    { id: 10, name: "Lovesong", duration: "5:16" },
+                    { id: 11, name: "Someone Like You", duration: "4:45" }
+                ]
+            },
+            {
+                id: 8,
+                name: "Random Access Memories",
+                artist: "Daft Punk",
+                year: 2013,
+                cover: "https://upload.wikimedia.org/wikipedia/en/a/a7/Random_Access_Memories.jpg",
+                genre: "Electronic/Disco",
+                songs: [
+                    { id: 1, name: "Give Life Back to Music", duration: "4:34" },
+                    { id: 2, name: "The Game of Love", duration: "5:22" },
+                    { id: 3, name: "Giorgio by Moroder", duration: "9:04" },
+                    { id: 4, name: "Within", duration: "3:48" },
+                    { id: 5, name: "Instant Crush", duration: "5:37" },
+                    { id: 6, name: "Lose Yourself to Dance", duration: "5:53" },
+                    { id: 7, name: "Touch", duration: "8:18" },
+                    { id: 8, name: "Get Lucky", duration: "6:09" },
+                    { id: 9, name: "Beyond", duration: "4:50" },
+                    { id: 10, name: "Motherboard", duration: "5:41" },
+                    { id: 11, name: "Fragments of Time", duration: "4:39" },
+                    { id: 12, name: "Doin' It Right", duration: "4:11" },
+                    { id: 13, name: "Contact", duration: "6:21" }
+                ]
+            },
+            {
+                id: 9,
+                name: "good kid, m.A.A.d city",
+                artist: "Kendrick Lamar",
+                year: 2012,
+                cover: "https://upload.wikimedia.org/wikipedia/en/e/e1/Kendrick_Lamar_-_Good_Kid%2C_M.A.A.D_City_%28Deluxe%29.png",
+                genre: "Hip-Hop",
+                songs: [
+                    { id: 1, name: "Sherane a.k.a Master Splinter's Daughter", duration: "4:33" },
+                    { id: 2, name: "Bitch, Don't Kill My Vibe", duration: "5:10" },
+                    { id: 3, name: "Backseat Freestyle", duration: "3:32" },
+                    { id: 4, name: "The Art of Peer Pressure", duration: "5:24" },
+                    { id: 5, name: "Money Trees", duration: "6:26" },
+                    { id: 6, name: "Poetic Justice", duration: "5:00" },
+                    { id: 7, name: "good kid", duration: "3:34" },
+                    { id: 8, name: "m.A.A.d city", duration: "5:50" },
+                    { id: 9, name: "Swimming Pools (Drank)", duration: "5:13" },
+                    { id: 10, name: "Sing About Me, I'm Dying of Thirst", duration: "12:03" },
+                    { id: 11, name: "Real", duration: "7:23" },
+                    { id: 12, name: "Compton", duration: "4:08" }
+                ]
+            },
+            {
+                id: 10,
+                name: "In Rainbows",
+                artist: "Radiohead",
+                year: 2007,
+                cover: "https://upload.wikimedia.org/wikipedia/en/2/2e/In_Rainbows_Official_Cover.jpg",
+                genre: "Alternative Rock",
+                songs: [
+                    { id: 1, name: "15 Step", duration: "3:58" },
+                    { id: 2, name: "Bodysnatchers", duration: "4:02" },
+                    { id: 3, name: "Nude", duration: "4:15" },
+                    { id: 4, name: "Weird Fishes/Arpeggi", duration: "5:18" },
+                    { id: 5, name: "All I Need", duration: "3:48" },
+                    { id: 6, name: "Faust Arp", duration: "2:10" },
+                    { id: 7, name: "Reckoner", duration: "4:50" },
+                    { id: 8, name: "House of Cards", duration: "5:28" },
+                    { id: 9, name: "Jigsaw Falling into Place", duration: "4:09" },
+                    { id: 10, name: "Videotape", duration: "4:40" }
+                ]
+            },
+            {
+                id: 11,
+                name: "To Pimp a Butterfly",
+                artist: "Kendrick Lamar",
+                year: 2015,
+                cover: "https://upload.wikimedia.org/wikipedia/en/f/f6/Kendrick_Lamar_-_To_Pimp_a_Butterfly.png",
+                genre: "Hip-Hop/Jazz",
+                songs: [
+                    { id: 1, name: "Wesley's Theory", duration: "4:47" },
+                    { id: 2, name: "For Free? (Interlude)", duration: "2:10" },
+                    { id: 3, name: "King Kunta", duration: "3:54" },
+                    { id: 4, name: "Institutionalized", duration: "4:31" },
+                    { id: 5, name: "These Walls", duration: "5:00" },
+                    { id: 6, name: "u", duration: "4:28" },
+                    { id: 7, name: "Alright", duration: "3:39" },
+                    { id: 8, name: "For Sale? (Interlude)", duration: "4:51" },
+                    { id: 9, name: "Momma", duration: "4:43" },
+                    { id: 10, name: "Hood Politics", duration: "4:52" },
+                    { id: 11, name: "How Much a Dollar Cost", duration: "4:21" },
+                    { id: 12, name: "Complexion (A Zulu Love)", duration: "4:23" },
+                    { id: 13, name: "The Blacker the Berry", duration: "5:28" },
+                    { id: 14, name: "You Ain't Gotta Lie", duration: "4:01" },
+                    { id: 15, name: "i", duration: "5:36" },
+                    { id: 16, name: "Mortal Man", duration: "12:07" }
+                ]
+            },
+            {
+                id: 12,
+                name: "Born to Die",
+                artist: "Lana Del Rey",
+                year: 2012,
+                cover: "https://upload.wikimedia.org/wikipedia/en/2/20/Lana_Del_Rey_-_Born_to_Die.png",
+                genre: "Indie Pop",
+                songs: [
+                    { id: 1, name: "Born to Die", duration: "4:46" },
+                    { id: 2, name: "Off to the Races", duration: "5:00" },
+                    { id: 3, name: "Blue Jeans", duration: "3:30" },
+                    { id: 4, name: "Video Games", duration: "4:42" },
+                    { id: 5, name: "Diet Mountain Dew", duration: "3:43" },
+                    { id: 6, name: "National Anthem", duration: "3:51" },
+                    { id: 7, name: "Dark Paradise", duration: "4:03" },
+                    { id: 8, name: "Radio", duration: "3:34" },
+                    { id: 9, name: "Carmen", duration: "4:08" },
+                    { id: 10, name: "Million Dollar Man", duration: "3:51" },
+                    { id: 11, name: "Summertime Sadness", duration: "4:25" },
+                    { id: 12, name: "This Is What Makes Us Girls", duration: "3:58" }
+                ]
+            }
         ];
 
-        // Common ingredients list for autocomplete
-        const COMMON_INGREDIENTS = [
-          // Spirits
-          "vodka", "vanilla vodka", "gin", "rum", "white rum", "dark rum", "coconut rum", "151 rum",
-          "tequila", "whiskey", "bourbon", "rye whiskey", "irish whiskey", "scotch", "islay scotch",
-          "brandy", "cognac", "jameson",
-          
-          // Liqueurs
-          "triple sec", "blue curacao", "orange curacao", "campari", "aperol", "coffee liqueur",
-          "irish cream", "peach schnapps", "apple schnapps", "midori", "amaretto", "chambord",
-          "maraschino liqueur", "creme de violette", "creme de mure", "cherry liqueur", "drambuie",
-          "green chartreuse", "chocolate liqueur", "passion fruit liqueur", "lychee liqueur",
-          "absinthe", "lillet blanc",
-          
-          // Vermouth & Wine
-          "dry vermouth", "sweet vermouth", "champagne", "prosecco", "sake", "beer", "stout beer",
-          
-          // Juices
-          "lime juice", "lemon juice", "orange juice", "cranberry juice", "pineapple juice",
-          "tomato juice", "grapefruit juice", "passion fruit puree", "peach puree", "lychee juice",
-          
-          // Sodas & Mixers
-          "soda water", "tonic water", "ginger beer", "cola", "sprite", "lemonade", "grapefruit soda",
-          
-          // Syrups & Sweeteners
-          "sugar", "simple syrup", "agave syrup", "orgeat syrup", "honey syrup", "grenadine",
-          "sour mix",
-          
-          // Condiments & Spices
-          "bitters", "peychaud's bitters", "salt", "pepper", "worcestershire sauce", "hot sauce",
-          
-          // Fresh Ingredients
-          "mint", "lime", "lemon", "orange", "grapefruit", "cucumber", "ginger", "blackberry",
-          
-          // Dairy & Cream
-          "cream", "coconut cream", "egg white",
-          
-          // Garnishes
-          "olive", "cherry", "celery", "lemon twist", "orange peel", "apple slice", "lychee fruit"
+        // Demo users for the friends feature
+        const DEMO_USERS = [
+            { id: "demo1", username: "musiclover42", displayName: "Alex" },
+            { id: "demo2", username: "vinylhead", displayName: "Jordan" },
+            { id: "demo3", username: "beatmaster", displayName: "Sam" },
+            { id: "demo4", username: "rocknroller", displayName: "Taylor" },
+            { id: "demo5", username: "melodyfan", displayName: "Casey" }
         ];
 
-        function CocktailApp() {
-          const [myIngredients, setMyIngredients] = useState([]);
-          const [newIngredient, setNewIngredient] = useState("");
-          const [suggestions, setSuggestions] = useState([]);
-          const [showSuggestions, setShowSuggestions] = useState(false);
-          const [searchQuery, setSearchQuery] = useState("");
-          const [currentPage, setCurrentPage] = useState("ingredients");
-          const [customRecipes, setCustomRecipes] = useState([]);
-          const [customIngredients, setCustomIngredients] = useState([]);
-          const [showDropdown, setShowDropdown] = useState(false);
-
-          // New recipe form state
-          const [newRecipeName, setNewRecipeName] = useState("");
-          const [newRecipeIngredients, setNewRecipeIngredients] = useState("");
-          const [newRecipeInstructions, setNewRecipeInstructions] = useState("");
-
-          // Load ingredients, custom ingredients, and custom recipes from memory on mount
-          useEffect(() => {
-            const saved = localStorage.getItem('myIngredients');
-            if (saved) {
-              setMyIngredients(JSON.parse(saved));
-            }
-            const savedRecipes = localStorage.getItem('customRecipes');
-            if (savedRecipes) {
-              setCustomRecipes(JSON.parse(savedRecipes));
-            }
-            const savedCustomIngredients = localStorage.getItem('customIngredients');
-            if (savedCustomIngredients) {
-              setCustomIngredients(JSON.parse(savedCustomIngredients));
-            }
-          }, []);
-
-          // Save ingredients to memory whenever they change
-          useEffect(() => {
-            localStorage.setItem('myIngredients', JSON.stringify(myIngredients));
-          }, [myIngredients]);
-
-          // Save custom recipes to memory whenever they change
-          useEffect(() => {
-            localStorage.setItem('customRecipes', JSON.stringify(customRecipes));
-          }, [customRecipes]);
-
-          // Save custom ingredients to memory whenever they change
-          useEffect(() => {
-            localStorage.setItem('customIngredients', JSON.stringify(customIngredients));
-          }, [customIngredients]);
-
-          // Filter suggestions based on input (combine built-in and custom ingredients)
-          useEffect(() => {
-            if (newIngredient.trim().length > 0) {
-              const allIngredients = [...COMMON_INGREDIENTS, ...customIngredients];
-              const filtered = allIngredients.filter(ing =>
-                ing.toLowerCase().includes(newIngredient.toLowerCase()) &&
-                !myIngredients.some(myIng => myIng.toLowerCase() === ing.toLowerCase())
-              ).slice(0, 5);
-              setSuggestions(filtered);
-            } else {
-              setSuggestions([]);
-            }
-          }, [newIngredient, myIngredients, customIngredients]);
-
-          const addIngredient = (ingredient) => {
-            const trimmed = ingredient.trim().toLowerCase();
-            if (trimmed && !myIngredients.some(ing => ing.toLowerCase() === trimmed)) {
-              setMyIngredients([...myIngredients, trimmed]);
-
-              // If this is a new custom ingredient, add it to the autocomplete list
-              const isBuiltIn = COMMON_INGREDIENTS.some(ing => ing.toLowerCase() === trimmed);
-              const isCustom = customIngredients.some(ing => ing.toLowerCase() === trimmed);
-              if (!isBuiltIn && !isCustom) {
-                setCustomIngredients([...customIngredients, trimmed]);
-              }
-
-              setNewIngredient("");
-              setSuggestions([]);
-              setShowSuggestions(false);
-            }
-          };
-
-          const removeIngredient = (ingredient) => {
-            setMyIngredients(myIngredients.filter(ing => ing !== ingredient));
-          };
-
-          const addCustomRecipe = () => {
-            if (newRecipeName.trim() && newRecipeIngredients.trim() && newRecipeInstructions.trim()) {
-              const recipe = {
-                name: newRecipeName.trim(),
-                ingredients: newRecipeIngredients.split(',').map(i => i.trim().toLowerCase()),
-                instructions: newRecipeInstructions.trim(),
-                isCustom: true
-              };
-              setCustomRecipes([...customRecipes, recipe]);
-              setNewRecipeName("");
-              setNewRecipeIngredients("");
-              setNewRecipeInstructions("");
-            }
-          };
-
-          const deleteCustomRecipe = (index) => {
-            setCustomRecipes(customRecipes.filter((_, i) => i !== index));
-          };
-
-          // Find cocktails user can make
-          const getAvailableCocktails = () => {
-            const allCocktails = [...COCKTAIL_DATABASE, ...customRecipes];
-            return allCocktails.map(cocktail => {
-              const requiredIngredients = cocktail.ingredients;
-              const hasAll = requiredIngredients.every(ing => 
-                myIngredients.some(myIng => myIng.toLowerCase() === ing.toLowerCase())
-              );
-              const missingCount = requiredIngredients.filter(ing =>
-                !myIngredients.some(myIng => myIng.toLowerCase() === ing.toLowerCase())
-              ).length;
-              
-              return {
-                ...cocktail,
-                canMake: hasAll,
-                missingCount,
-                missing: requiredIngredients.filter(ing =>
-                  !myIngredients.some(myIng => myIng.toLowerCase() === ing.toLowerCase())
-                )
-              };
-            }).sort((a, b) => {
-              if (a.canMake && !b.canMake) return -1;
-              if (!a.canMake && b.canMake) return 1;
-              return a.missingCount - b.missingCount;
+        // Generate some demo ratings
+        const generateDemoRatings = () => {
+            const ratings = {};
+            DEMO_USERS.forEach(user => {
+                ratings[user.id] = {};
+                // Give each demo user some random ratings
+                ALBUM_DATABASE.slice(0, 6).forEach(album => {
+                    if (Math.random() > 0.3) {
+                        ratings[user.id][album.id] = {
+                            songs: {},
+                            albumComment: Math.random() > 0.5 ? `Great album by ${album.artist}!` : null,
+                            timestamp: Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)
+                        };
+                        album.songs.forEach(song => {
+                            if (Math.random() > 0.2) {
+                                ratings[user.id][album.id].songs[song.id] = {
+                                    rating: Math.floor(Math.random() * 5) + 5,
+                                    comment: Math.random() > 0.7 ? "Love this track!" : null
+                                };
+                            }
+                        });
+                    }
+                });
             });
-          };
+            return ratings;
+        };
 
-          const filteredCocktails = getAvailableCocktails().filter(cocktail =>
-            cocktail.name.toLowerCase().includes(searchQuery.toLowerCase())
-          );
+        // Main App Component
+        function MusicRatingApp() {
+            // Auth state
+            const [currentUser, setCurrentUser] = useState(null);
+            const [authMode, setAuthMode] = useState("login"); // login or register
+            const [authUsername, setAuthUsername] = useState("");
+            const [authPassword, setAuthPassword] = useState("");
+            const [authError, setAuthError] = useState("");
 
-          const canMakeCount = filteredCocktails.filter(c => c.canMake).length;
+            // App state
+            const [currentPage, setCurrentPage] = useState("home"); // home, album, profile, friends, friendProfile
+            const [selectedAlbum, setSelectedAlbum] = useState(null);
+            const [selectedFriend, setSelectedFriend] = useState(null);
+            const [searchQuery, setSearchQuery] = useState("");
+            const [friendSearchQuery, setFriendSearchQuery] = useState("");
 
-          const pageNames = {
-            ingredients: "My Ingredients",
-            cocktails: "Available Cocktails",
-            recipes: "Custom Recipes"
-          };
+            // Data state
+            const [users, setUsers] = useState({});
+            const [ratings, setRatings] = useState({});
+            const [friends, setFriends] = useState({});
+            const [demoRatings, setDemoRatings] = useState({});
 
-          return (
-            <div className="min-h-screen wood-bg text-white pb-20">
-              {/* Header */}
-              <div className="p-6 sticky top-0 z-20 shadow-lg" style={{background: 'linear-gradient(135deg, #4a2804 0%, #3a1f03 50%, #291502 100%)'}}>
-                <div className="flex items-center gap-3 mb-4">
-                  <Wine />
-                  <h1 className="text-3xl font-bold">My Bar</h1>
-                </div>
+            // Load data from localStorage
+            useEffect(() => {
+                const savedUsers = localStorage.getItem('ratemusic_users');
+                const savedRatings = localStorage.getItem('ratemusic_ratings');
+                const savedFriends = localStorage.getItem('ratemusic_friends');
+                const savedCurrentUser = localStorage.getItem('ratemusic_currentUser');
+                const savedDemoRatings = localStorage.getItem('ratemusic_demoRatings');
 
-                {/* Dropdown Navigation */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowDropdown(!showDropdown)}
-                    className="w-full px-4 py-3 rounded-xl flex items-center justify-between transition-all"
-                    style={{background: 'rgba(41, 21, 2, 0.6)', border: '2px solid #CC5500'}}
-                  >
-                    <span className="font-semibold">{pageNames[currentPage]}</span>
-                    <ChevronDown />
-                  </button>
+                if (savedUsers) setUsers(JSON.parse(savedUsers));
+                if (savedRatings) setRatings(JSON.parse(savedRatings));
+                if (savedFriends) setFriends(JSON.parse(savedFriends));
+                if (savedCurrentUser) setCurrentUser(JSON.parse(savedCurrentUser));
+                if (savedDemoRatings) {
+                    setDemoRatings(JSON.parse(savedDemoRatings));
+                } else {
+                    const newDemoRatings = generateDemoRatings();
+                    setDemoRatings(newDemoRatings);
+                    localStorage.setItem('ratemusic_demoRatings', JSON.stringify(newDemoRatings));
+                }
+            }, []);
 
-                  {showDropdown && (
-                    <div className="absolute w-full mt-2 rounded-xl shadow-xl overflow-hidden" style={{background: '#1a0f01', border: '2px solid #CC5500'}}>
-                      <button
-                        onClick={() => { setCurrentPage("ingredients"); setShowDropdown(false); }}
-                        className="w-full text-left px-4 py-3 transition-colors"
-                        style={{background: currentPage === "ingredients" ? '#4a2804' : 'transparent'}}
-                        onMouseEnter={(e) => e.target.style.background = '#3a1f03'}
-                        onMouseLeave={(e) => e.target.style.background = currentPage === "ingredients" ? '#4a2804' : 'transparent'}
-                      >
-                        My Ingredients
-                      </button>
-                      <button
-                        onClick={() => { setCurrentPage("cocktails"); setShowDropdown(false); }}
-                        className="w-full text-left px-4 py-3 transition-colors"
-                        style={{background: currentPage === "cocktails" ? '#4a2804' : 'transparent'}}
-                        onMouseEnter={(e) => e.target.style.background = '#3a1f03'}
-                        onMouseLeave={(e) => e.target.style.background = currentPage === "cocktails" ? '#4a2804' : 'transparent'}
-                      >
-                        Available Cocktails
-                      </button>
-                      <button
-                        onClick={() => { setCurrentPage("recipes"); setShowDropdown(false); }}
-                        className="w-full text-left px-4 py-3 transition-colors"
-                        style={{background: currentPage === "recipes" ? '#4a2804' : 'transparent'}}
-                        onMouseEnter={(e) => e.target.style.background = '#3a1f03'}
-                        onMouseLeave={(e) => e.target.style.background = currentPage === "recipes" ? '#4a2804' : 'transparent'}
-                      >
-                        Custom Recipes
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
+            // Save data to localStorage
+            useEffect(() => {
+                localStorage.setItem('ratemusic_users', JSON.stringify(users));
+            }, [users]);
 
-              <div className="p-6 max-w-2xl mx-auto">
-                {/* PAGE 1: MY INGREDIENTS */}
-                {currentPage === "ingredients" && (
-                  <>
-                    <div className="wood-card rounded-2xl p-6 mb-6 shadow-xl border-2" style={{borderColor: '#CC5500'}}>
-                      <h2 className="text-xl font-semibold mb-4">Add Ingredients</h2>
-                      <div className="relative">
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={newIngredient}
-                            onChange={(e) => {
-                              setNewIngredient(e.target.value);
-                              setShowSuggestions(true);
-                            }}
-                            onFocus={() => setShowSuggestions(true)}
-                            onKeyPress={(e) => e.key === 'Enter' && addIngredient(newIngredient)}
-                            placeholder="e.g., vodka, lime juice..."
-                            className="flex-1 px-4 py-3 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white border-2"
-                            style={{background: 'rgba(41, 21, 2, 0.5)', borderColor: '#CC5500'}}
-                          />
-                          <button
-                            onClick={() => addIngredient(newIngredient)}
-                            className="px-6 py-3 rounded-xl font-semibold transition-colors shadow-lg text-white"
-                            style={{background: 'linear-gradient(135deg, #CC5500 0%, #FF6A00 100%)'}}
-                          >
-                            <Plus />
-                          </button>
-                        </div>
+            useEffect(() => {
+                localStorage.setItem('ratemusic_ratings', JSON.stringify(ratings));
+            }, [ratings]);
 
-                        {/* Suggestions Dropdown */}
-                        {showSuggestions && suggestions.length > 0 && (
-                          <div className="absolute w-full mt-2 rounded-xl shadow-xl overflow-hidden z-20 border-2" style={{background: '#1a0f01', borderColor: '#CC5500'}}>
-                            {suggestions.map((suggestion, idx) => (
-                              <button
-                                key={idx}
-                                onClick={() => addIngredient(suggestion)}
-                                className="w-full text-left px-4 py-3 text-white transition-colors"
-                                style={{background: 'transparent'}}
-                                onMouseEnter={(e) => e.target.style.background = '#3a1f03'}
-                                onMouseLeave={(e) => e.target.style.background = 'transparent'}
-                              >
-                                {suggestion}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+            useEffect(() => {
+                localStorage.setItem('ratemusic_friends', JSON.stringify(friends));
+            }, [friends]);
 
-                      {/* My Ingredients */}
-                      <div className="mt-4">
-                        {myIngredients.length === 0 ? (
-                          <p className="text-gray-400 text-center py-4">No ingredients yet. Add some to get started!</p>
-                        ) : (
-                          <div className="flex flex-wrap gap-2">
-                            {myIngredients.map((ingredient, idx) => (
-                              <div
-                                key={idx}
-                                className="px-4 py-2 rounded-full flex items-center gap-2 shadow text-white border-2"
-                                style={{background: 'linear-gradient(135deg, #CC5500 0%, #FF6A00 100%)', borderColor: '#8B4000'}}
-                              >
-                                <span className="capitalize font-medium">{ingredient}</span>
+            useEffect(() => {
+                if (currentUser) {
+                    localStorage.setItem('ratemusic_currentUser', JSON.stringify(currentUser));
+                } else {
+                    localStorage.removeItem('ratemusic_currentUser');
+                }
+            }, [currentUser]);
+
+            // Auth functions
+            const handleRegister = () => {
+                if (authUsername.length < 3) {
+                    setAuthError("Username must be at least 3 characters");
+                    return;
+                }
+                if (authPassword.length < 4) {
+                    setAuthError("Password must be at least 4 characters");
+                    return;
+                }
+                if (users[authUsername.toLowerCase()]) {
+                    setAuthError("Username already exists");
+                    return;
+                }
+
+                const newUser = {
+                    id: Date.now().toString(),
+                    username: authUsername.toLowerCase(),
+                    displayName: authUsername,
+                    createdAt: Date.now()
+                };
+
+                setUsers({ ...users, [authUsername.toLowerCase()]: { ...newUser, password: authPassword } });
+                setCurrentUser(newUser);
+                setFriends({ ...friends, [newUser.id]: [] });
+                setRatings({ ...ratings, [newUser.id]: {} });
+                setAuthUsername("");
+                setAuthPassword("");
+                setAuthError("");
+            };
+
+            const handleLogin = () => {
+                const user = users[authUsername.toLowerCase()];
+                if (!user || user.password !== authPassword) {
+                    setAuthError("Invalid username or password");
+                    return;
+                }
+
+                const { password, ...userWithoutPassword } = user;
+                setCurrentUser(userWithoutPassword);
+                setAuthUsername("");
+                setAuthPassword("");
+                setAuthError("");
+            };
+
+            const handleLogout = () => {
+                setCurrentUser(null);
+                setCurrentPage("home");
+            };
+
+            // Rating functions
+            const rateSong = (albumId, songId, rating) => {
+                if (!currentUser) return;
+
+                setRatings(prev => ({
+                    ...prev,
+                    [currentUser.id]: {
+                        ...prev[currentUser.id],
+                        [albumId]: {
+                            ...prev[currentUser.id]?.[albumId],
+                            songs: {
+                                ...prev[currentUser.id]?.[albumId]?.songs,
+                                [songId]: {
+                                    ...prev[currentUser.id]?.[albumId]?.songs?.[songId],
+                                    rating,
+                                    timestamp: Date.now()
+                                }
+                            },
+                            timestamp: Date.now()
+                        }
+                    }
+                }));
+            };
+
+            const addSongComment = (albumId, songId, comment) => {
+                if (!currentUser) return;
+
+                setRatings(prev => ({
+                    ...prev,
+                    [currentUser.id]: {
+                        ...prev[currentUser.id],
+                        [albumId]: {
+                            ...prev[currentUser.id]?.[albumId],
+                            songs: {
+                                ...prev[currentUser.id]?.[albumId]?.songs,
+                                [songId]: {
+                                    ...prev[currentUser.id]?.[albumId]?.songs?.[songId],
+                                    comment
+                                }
+                            }
+                        }
+                    }
+                }));
+            };
+
+            const addAlbumComment = (albumId, comment) => {
+                if (!currentUser) return;
+
+                setRatings(prev => ({
+                    ...prev,
+                    [currentUser.id]: {
+                        ...prev[currentUser.id],
+                        [albumId]: {
+                            ...prev[currentUser.id]?.[albumId],
+                            albumComment: comment,
+                            timestamp: Date.now()
+                        }
+                    }
+                }));
+            };
+
+            // Calculate album rating from song ratings
+            const getAlbumRating = (userId, albumId) => {
+                const userRatings = ratings[userId]?.[albumId]?.songs || demoRatings[userId]?.[albumId]?.songs || {};
+                const songRatings = Object.values(userRatings).filter(r => r.rating !== undefined).map(r => r.rating);
+                if (songRatings.length === 0) return null;
+                const avg = songRatings.reduce((a, b) => a + b, 0) / songRatings.length;
+                return Math.round(avg * 10) / 10;
+            };
+
+            // Friend functions
+            const addFriend = (friendId) => {
+                if (!currentUser) return;
+                const currentFriends = friends[currentUser.id] || [];
+                if (!currentFriends.includes(friendId)) {
+                    setFriends({
+                        ...friends,
+                        [currentUser.id]: [...currentFriends, friendId]
+                    });
+                }
+            };
+
+            const removeFriend = (friendId) => {
+                if (!currentUser) return;
+                setFriends({
+                    ...friends,
+                    [currentUser.id]: (friends[currentUser.id] || []).filter(id => id !== friendId)
+                });
+            };
+
+            const isFriend = (userId) => {
+                if (!currentUser) return false;
+                return (friends[currentUser.id] || []).includes(userId);
+            };
+
+            // Get all available users (real + demo)
+            const getAllUsers = () => {
+                const realUsers = Object.values(users).map(u => ({
+                    id: u.id,
+                    username: u.username,
+                    displayName: u.displayName
+                }));
+                return [...realUsers, ...DEMO_USERS].filter(u => u.id !== currentUser?.id);
+            };
+
+            // Get friend activity
+            const getFriendActivity = () => {
+                if (!currentUser) return [];
+                const friendIds = friends[currentUser.id] || [];
+                const activity = [];
+
+                friendIds.forEach(friendId => {
+                    const friendRatings = { ...ratings[friendId], ...demoRatings[friendId] };
+                    const friend = getAllUsers().find(u => u.id === friendId);
+                    if (!friend) return;
+
+                    Object.entries(friendRatings).forEach(([albumId, albumData]) => {
+                        const album = ALBUM_DATABASE.find(a => a.id === parseInt(albumId));
+                        if (!album) return;
+
+                        const avgRating = getAlbumRating(friendId, parseInt(albumId));
+                        if (avgRating !== null) {
+                            activity.push({
+                                friend,
+                                album,
+                                rating: avgRating,
+                                comment: albumData.albumComment,
+                                timestamp: albumData.timestamp || Date.now()
+                            });
+                        }
+                    });
+                });
+
+                return activity.sort((a, b) => b.timestamp - a.timestamp);
+            };
+
+            // Filter albums by search
+            const filteredAlbums = ALBUM_DATABASE.filter(album =>
+                album.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                album.artist.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+
+            // Render rating display
+            const RatingDisplay = ({ rating, size = "normal" }) => {
+                const textSize = size === "large" ? "text-3xl" : "text-xl";
+                const color = rating >= 8 ? "text-green-400" : rating >= 6 ? "text-yellow-400" : rating >= 4 ? "text-orange-400" : "text-red-400";
+                return (
+                    <span className={`${textSize} font-bold ${color}`}>
+                        {rating.toFixed(1)}
+                    </span>
+                );
+            };
+
+            // Auth Screen
+            if (!currentUser) {
+                return (
+                    <div className="min-h-screen music-bg text-white flex items-center justify-center p-4">
+                        <div className="card-gradient rounded-2xl p-8 w-full max-w-md border-2 border-pink-500/30">
+                            <div className="flex items-center justify-center gap-3 mb-8">
+                                <Music />
+                                <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+                                    RateMyMusic
+                                </h1>
+                            </div>
+
+                            <div className="flex mb-6">
                                 <button
-                                  onClick={() => removeIngredient(ingredient)}
-                                  className="hover:bg-black hover:bg-opacity-30 rounded-full p-1 transition-colors"
+                                    onClick={() => { setAuthMode("login"); setAuthError(""); }}
+                                    className={`flex-1 py-3 text-center font-semibold transition-colors ${
+                                        authMode === "login"
+                                            ? "bg-pink-500/20 border-b-2 border-pink-500"
+                                            : "text-gray-400"
+                                    }`}
                                 >
-                                  <X />
+                                    Login
                                 </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                                <button
+                                    onClick={() => { setAuthMode("register"); setAuthError(""); }}
+                                    className={`flex-1 py-3 text-center font-semibold transition-colors ${
+                                        authMode === "register"
+                                            ? "bg-pink-500/20 border-b-2 border-pink-500"
+                                            : "text-gray-400"
+                                    }`}
+                                >
+                                    Register
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm text-gray-400 mb-2">Username</label>
+                                    <input
+                                        type="text"
+                                        value={authUsername}
+                                        onChange={(e) => setAuthUsername(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-pink-500/30 focus:outline-none focus:border-pink-500 text-white"
+                                        placeholder="Enter username"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm text-gray-400 mb-2">Password</label>
+                                    <input
+                                        type="password"
+                                        value={authPassword}
+                                        onChange={(e) => setAuthPassword(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && (authMode === "login" ? handleLogin() : handleRegister())}
+                                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-pink-500/30 focus:outline-none focus:border-pink-500 text-white"
+                                        placeholder="Enter password"
+                                    />
+                                </div>
+
+                                {authError && (
+                                    <p className="text-red-400 text-sm">{authError}</p>
+                                )}
+
+                                <button
+                                    onClick={authMode === "login" ? handleLogin : handleRegister}
+                                    className="w-full py-3 rounded-xl font-semibold text-white transition-all"
+                                    style={{ background: "linear-gradient(135deg, #e94560 0%, #0f3460 100%)" }}
+                                >
+                                    {authMode === "login" ? "Login" : "Create Account"}
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                  </>
-                )}
+                );
+            }
 
-                {/* PAGE 2: AVAILABLE COCKTAILS */}
-                {currentPage === "cocktails" && (
-                  <>
-                    {/* Stats */}
-                    <div className="rounded-2xl p-6 mb-6 shadow-xl border-2" style={{background: 'linear-gradient(135deg, #CC5500 0%, #FF6A00 100%)', borderColor: '#8B4000'}}>
-                      <div className="text-center">
-                        <p className="text-4xl font-bold mb-2">{canMakeCount}</p>
-                        <p className="text-lg">Cocktails You Can Make Right Now</p>
-                      </div>
+            // Album Detail Page
+            if (currentPage === "album" && selectedAlbum) {
+                const userAlbumRatings = ratings[currentUser.id]?.[selectedAlbum.id]?.songs || {};
+                const albumRating = getAlbumRating(currentUser.id, selectedAlbum.id);
+                const albumComment = ratings[currentUser.id]?.[selectedAlbum.id]?.albumComment || "";
+
+                return (
+                    <div className="min-h-screen music-bg text-white pb-24">
+                        {/* Header */}
+                        <div className="sticky top-0 z-20 p-4" style={{ background: "linear-gradient(135deg, #16213e 0%, #1a1a2e 100%)" }}>
+                            <button
+                                onClick={() => { setCurrentPage("home"); setSelectedAlbum(null); }}
+                                className="flex items-center gap-2 text-pink-400 mb-4"
+                            >
+                                <ChevronLeft /> Back
+                            </button>
+                        </div>
+
+                        <div className="p-4 max-w-2xl mx-auto">
+                            {/* Album Info */}
+                            <div className="flex gap-4 mb-6">
+                                <img
+                                    src={selectedAlbum.cover}
+                                    alt={selectedAlbum.name}
+                                    className="w-32 h-32 rounded-xl object-cover shadow-lg"
+                                    onError={(e) => { e.target.src = "https://via.placeholder.com/128?text=Album"; }}
+                                />
+                                <div className="flex-1">
+                                    <h1 className="text-2xl font-bold mb-1">{selectedAlbum.name}</h1>
+                                    <p className="text-pink-400 mb-1">{selectedAlbum.artist}</p>
+                                    <p className="text-gray-400 text-sm">{selectedAlbum.year} • {selectedAlbum.genre}</p>
+                                    {albumRating !== null && (
+                                        <div className="mt-2">
+                                            <span className="text-gray-400 text-sm">Your Rating: </span>
+                                            <RatingDisplay rating={albumRating} size="large" />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Album Comment */}
+                            <div className="card-gradient rounded-xl p-4 mb-6 border border-pink-500/20">
+                                <h3 className="font-semibold mb-2 flex items-center gap-2">
+                                    <MessageCircle /> Album Comment
+                                </h3>
+                                <textarea
+                                    value={albumComment}
+                                    onChange={(e) => addAlbumComment(selectedAlbum.id, e.target.value)}
+                                    placeholder="Share your thoughts on this album..."
+                                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-pink-500/30 focus:outline-none focus:border-pink-500 text-white resize-none"
+                                    rows="3"
+                                />
+                            </div>
+
+                            {/* Songs List */}
+                            <h2 className="text-xl font-semibold mb-4">Tracks</h2>
+                            <div className="space-y-3">
+                                {selectedAlbum.songs.map((song, idx) => {
+                                    const songData = userAlbumRatings[song.id] || {};
+                                    const [showComment, setShowComment] = React.useState(false);
+
+                                    return (
+                                        <div
+                                            key={song.id}
+                                            className="card-gradient rounded-xl p-4 border border-pink-500/20"
+                                        >
+                                            <div className="flex items-start justify-between mb-3">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-gray-500 text-sm w-6">{idx + 1}</span>
+                                                        <div>
+                                                            <p className="font-medium">{song.name}</p>
+                                                            <p className="text-gray-400 text-sm">{song.duration}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {songData.rating !== undefined && (
+                                                    <RatingDisplay rating={songData.rating} />
+                                                )}
+                                            </div>
+
+                                            {/* Rating Slider */}
+                                            <div className="flex items-center gap-4">
+                                                <span className="text-sm text-gray-400 w-8">0</span>
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max="10"
+                                                    step="0.5"
+                                                    value={songData.rating || 0}
+                                                    onChange={(e) => rateSong(selectedAlbum.id, song.id, parseFloat(e.target.value))}
+                                                    className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer rating-slider"
+                                                />
+                                                <span className="text-sm text-gray-400 w-8">10</span>
+                                                <button
+                                                    onClick={() => setShowComment(!showComment)}
+                                                    className={`p-2 rounded-lg transition-colors ${showComment ? "bg-pink-500/30" : "bg-white/5"}`}
+                                                >
+                                                    <MessageCircle />
+                                                </button>
+                                            </div>
+
+                                            {/* Comment Field */}
+                                            {showComment && (
+                                                <div className="mt-3">
+                                                    <input
+                                                        type="text"
+                                                        value={songData.comment || ""}
+                                                        onChange={(e) => addSongComment(selectedAlbum.id, song.id, e.target.value)}
+                                                        placeholder="Add a comment for this song..."
+                                                        className="w-full px-4 py-2 rounded-lg bg-white/5 border border-pink-500/30 focus:outline-none focus:border-pink-500 text-white text-sm"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Bottom Nav */}
+                        <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
                     </div>
+                );
+            }
 
-                    {/* Search */}
-                    {myIngredients.length > 0 && (
-                      <div className="mb-6">
-                        <div className="relative">
-                          <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-orange-500">
-                            <Search />
-                          </div>
-                          <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search cocktails..."
-                            className="w-full pl-12 pr-4 py-3 rounded-xl border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
-                            style={{background: 'rgba(41, 21, 2, 0.5)', borderColor: '#CC5500'}}
-                          />
+            // Friend Profile Page
+            if (currentPage === "friendProfile" && selectedFriend) {
+                const friendRatings = { ...ratings[selectedFriend.id], ...demoRatings[selectedFriend.id] };
+
+                return (
+                    <div className="min-h-screen music-bg text-white pb-24">
+                        {/* Header */}
+                        <div className="sticky top-0 z-20 p-4" style={{ background: "linear-gradient(135deg, #16213e 0%, #1a1a2e 100%)" }}>
+                            <button
+                                onClick={() => { setCurrentPage("friends"); setSelectedFriend(null); }}
+                                className="flex items-center gap-2 text-pink-400 mb-4"
+                            >
+                                <ChevronLeft /> Back
+                            </button>
                         </div>
-                      </div>
-                    )}
 
-                    {/* Cocktail List */}
-                    <div className="space-y-4">
-                      {filteredCocktails.map((cocktail, idx) => (
-                        <div
-                          key={idx}
-                          className="rounded-2xl p-6 shadow-xl transition-all border-2"
-                          style={{
-                            background: cocktail.canMake
-                              ? 'linear-gradient(135deg, #1a5f1a 0%, #2d7a2d 100%)'
-                              : 'linear-gradient(135deg, #4a2804 0%, #3a1f03 100%)',
-                            borderColor: cocktail.canMake ? '#2d7a2d' : '#CC5500'
-                          }}
-                        >
-                          <div className="flex items-start justify-between mb-3">
-                            <h3 className="text-2xl font-bold text-white">{cocktail.name}</h3>
-                            {cocktail.canMake && (
-                              <div className="bg-white bg-opacity-20 rounded-full p-2">
-                                <Check />
-                              </div>
-                            )}
-                            {cocktail.isCustom && (
-                              <span className="text-xs px-3 py-1 rounded-full text-white" style={{background: '#CC5500'}}>Custom</span>
-                            )}
-                          </div>
+                        <div className="p-4 max-w-2xl mx-auto">
+                            {/* Friend Info */}
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="w-20 h-20 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center text-3xl font-bold">
+                                    {selectedFriend.displayName[0].toUpperCase()}
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl font-bold">{selectedFriend.displayName}</h1>
+                                    <p className="text-gray-400">@{selectedFriend.username}</p>
+                                </div>
+                            </div>
 
-                          {!cocktail.canMake && cocktail.missingCount > 0 && (
-                            <p className="text-sm text-orange-300 mb-2">
-                              Missing {cocktail.missingCount} ingredient{cocktail.missingCount !== 1 ? 's' : ''}: {cocktail.missing.join(', ')}
-                            </p>
-                          )}
+                            <h2 className="text-xl font-semibold mb-4">{selectedFriend.displayName}'s Ratings</h2>
 
-                          <div className="mb-3">
-                            <p className="text-sm font-semibold mb-1 text-white">Ingredients:</p>
-                            <p className="text-sm text-gray-300">{cocktail.ingredients.join(', ')}</p>
-                            {cocktail.optional && cocktail.optional.length > 0 && (
-                              <p className="text-sm text-gray-400 mt-1">Optional: {cocktail.optional.join(', ')}</p>
-                            )}
-                          </div>
+                            {/* Friend's Album Ratings */}
+                            <div className="space-y-4">
+                                {Object.entries(friendRatings).length === 0 ? (
+                                    <p className="text-gray-400 text-center py-8">No ratings yet</p>
+                                ) : (
+                                    Object.entries(friendRatings).map(([albumId, albumData]) => {
+                                        const album = ALBUM_DATABASE.find(a => a.id === parseInt(albumId));
+                                        if (!album) return null;
+                                        const avgRating = getAlbumRating(selectedFriend.id, parseInt(albumId));
+                                        if (avgRating === null) return null;
 
-                          <div>
-                            <p className="text-sm font-semibold mb-1 text-white">Instructions:</p>
-                            <p className="text-sm text-gray-300">{cocktail.instructions}</p>
-                          </div>
+                                        return (
+                                            <div key={albumId} className="card-gradient rounded-xl p-4 border border-pink-500/20">
+                                                <div className="flex gap-4">
+                                                    <img
+                                                        src={album.cover}
+                                                        alt={album.name}
+                                                        className="w-16 h-16 rounded-lg object-cover"
+                                                        onError={(e) => { e.target.src = "https://via.placeholder.com/64?text=Album"; }}
+                                                    />
+                                                    <div className="flex-1">
+                                                        <h3 className="font-semibold">{album.name}</h3>
+                                                        <p className="text-pink-400 text-sm">{album.artist}</p>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <RatingDisplay rating={avgRating} />
+                                                            <span className="text-gray-400 text-sm">
+                                                                ({Object.keys(albumData.songs || {}).length} songs rated)
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {albumData.albumComment && (
+                                                    <p className="mt-3 text-gray-300 text-sm bg-white/5 rounded-lg p-3">
+                                                        "{albumData.albumComment}"
+                                                    </p>
+                                                )}
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
                         </div>
-                      ))}
 
-                      {myIngredients.length === 0 && (
-                        <div className="text-center py-12">
-                          <div className="mx-auto mb-4 opacity-50">
-                            <Wine />
-                          </div>
-                          <p className="text-xl text-gray-400">Add ingredients to see cocktail recommendations!</p>
-                        </div>
-                      )}
+                        {/* Bottom Nav */}
+                        <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
                     </div>
-                  </>
-                )}
+                );
+            }
 
-                {/* PAGE 3: CUSTOM RECIPES */}
-                {currentPage === "recipes" && (
-                  <>
-                    <div className="wood-card rounded-2xl p-6 mb-6 shadow-xl border-2" style={{borderColor: '#CC5500'}}>
-                      <h2 className="text-xl font-semibold mb-4 text-white">Add Custom Recipe</h2>
-
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-2 text-gray-300">Recipe Name</label>
-                          <input
-                            type="text"
-                            value={newRecipeName}
-                            onChange={(e) => setNewRecipeName(e.target.value)}
-                            placeholder="e.g., My Special Margarita"
-                            className="w-full px-4 py-3 rounded-xl border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
-                            style={{background: 'rgba(41, 21, 2, 0.5)', borderColor: '#CC5500'}}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium mb-2 text-gray-300">Ingredients (comma separated)</label>
-                          <input
-                            type="text"
-                            value={newRecipeIngredients}
-                            onChange={(e) => setNewRecipeIngredients(e.target.value)}
-                            placeholder="e.g., tequila, lime juice, salt"
-                            className="w-full px-4 py-3 rounded-xl border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
-                            style={{background: 'rgba(41, 21, 2, 0.5)', borderColor: '#CC5500'}}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium mb-2 text-gray-300">Instructions</label>
-                          <textarea
-                            value={newRecipeInstructions}
-                            onChange={(e) => setNewRecipeInstructions(e.target.value)}
-                            placeholder="Describe how to make this cocktail..."
-                            rows="4"
-                            className="w-full px-4 py-3 rounded-xl border-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white resize-none"
-                            style={{background: 'rgba(41, 21, 2, 0.5)', borderColor: '#CC5500'}}
-                          />
-                        </div>
-
+            // Bottom Navigation Component
+            const BottomNav = ({ currentPage, setCurrentPage }) => (
+                <div className="fixed bottom-0 left-0 right-0 z-30" style={{ background: "linear-gradient(135deg, #16213e 0%, #1a1a2e 100%)", borderTop: "1px solid rgba(233, 69, 96, 0.2)" }}>
+                    <div className="flex justify-around py-3 max-w-2xl mx-auto">
                         <button
-                          onClick={addCustomRecipe}
-                          className="w-full py-3 rounded-xl font-semibold transition-colors shadow-lg text-white"
-                          style={{background: 'linear-gradient(135deg, #CC5500 0%, #FF6A00 100%)'}}
+                            onClick={() => { setCurrentPage("home"); setSelectedAlbum(null); }}
+                            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-colors ${
+                                currentPage === "home" ? "text-pink-500" : "text-gray-400"
+                            }`}
                         >
-                          Add Recipe
+                            <Home />
+                            <span className="text-xs">Home</span>
                         </button>
-                      </div>
+                        <button
+                            onClick={() => setCurrentPage("friends")}
+                            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-colors ${
+                                currentPage === "friends" || currentPage === "friendProfile" ? "text-pink-500" : "text-gray-400"
+                            }`}
+                        >
+                            <Users />
+                            <span className="text-xs">Friends</span>
+                        </button>
+                        <button
+                            onClick={() => setCurrentPage("profile")}
+                            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-colors ${
+                                currentPage === "profile" ? "text-pink-500" : "text-gray-400"
+                            }`}
+                        >
+                            <User />
+                            <span className="text-xs">Profile</span>
+                        </button>
+                    </div>
+                </div>
+            );
+
+            // Friends Page
+            if (currentPage === "friends") {
+                const allUsers = getAllUsers();
+                const userFriends = friends[currentUser.id] || [];
+                const friendActivity = getFriendActivity();
+
+                const filteredUsers = allUsers.filter(u =>
+                    u.username.toLowerCase().includes(friendSearchQuery.toLowerCase()) ||
+                    u.displayName.toLowerCase().includes(friendSearchQuery.toLowerCase())
+                );
+
+                return (
+                    <div className="min-h-screen music-bg text-white pb-24">
+                        {/* Header */}
+                        <div className="p-4 sticky top-0 z-20" style={{ background: "linear-gradient(135deg, #16213e 0%, #1a1a2e 100%)" }}>
+                            <h1 className="text-2xl font-bold mb-4">Friends</h1>
+
+                            {/* Search Users */}
+                            <div className="relative">
+                                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-pink-500">
+                                    <Search />
+                                </div>
+                                <input
+                                    type="text"
+                                    value={friendSearchQuery}
+                                    onChange={(e) => setFriendSearchQuery(e.target.value)}
+                                    placeholder="Search users..."
+                                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-pink-500/30 focus:outline-none focus:border-pink-500 text-white"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="p-4 max-w-2xl mx-auto">
+                            {/* User Search Results */}
+                            {friendSearchQuery && (
+                                <div className="mb-6">
+                                    <h2 className="text-lg font-semibold mb-3">Search Results</h2>
+                                    <div className="space-y-2">
+                                        {filteredUsers.length === 0 ? (
+                                            <p className="text-gray-400">No users found</p>
+                                        ) : (
+                                            filteredUsers.map(user => (
+                                                <div
+                                                    key={user.id}
+                                                    className="card-gradient rounded-xl p-4 flex items-center justify-between border border-pink-500/20"
+                                                >
+                                                    <div
+                                                        className="flex items-center gap-3 cursor-pointer"
+                                                        onClick={() => {
+                                                            setSelectedFriend(user);
+                                                            setCurrentPage("friendProfile");
+                                                        }}
+                                                    >
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center font-bold">
+                                                            {user.displayName[0].toUpperCase()}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium">{user.displayName}</p>
+                                                            <p className="text-gray-400 text-sm">@{user.username}</p>
+                                                        </div>
+                                                    </div>
+                                                    {isFriend(user.id) ? (
+                                                        <button
+                                                            onClick={() => removeFriend(user.id)}
+                                                            className="p-2 rounded-lg bg-red-500/20 text-red-400"
+                                                        >
+                                                            <UserMinus />
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => addFriend(user.id)}
+                                                            className="p-2 rounded-lg bg-pink-500/20 text-pink-400"
+                                                        >
+                                                            <UserPlus />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* My Friends */}
+                            <div className="mb-6">
+                                <h2 className="text-lg font-semibold mb-3">My Friends ({userFriends.length})</h2>
+                                {userFriends.length === 0 ? (
+                                    <p className="text-gray-400 text-center py-4">Search for users to add friends!</p>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {userFriends.map(friendId => {
+                                            const friend = allUsers.find(u => u.id === friendId);
+                                            if (!friend) return null;
+                                            return (
+                                                <div
+                                                    key={friendId}
+                                                    className="card-gradient rounded-xl p-4 flex items-center justify-between border border-pink-500/20"
+                                                >
+                                                    <div
+                                                        className="flex items-center gap-3 cursor-pointer"
+                                                        onClick={() => {
+                                                            setSelectedFriend(friend);
+                                                            setCurrentPage("friendProfile");
+                                                        }}
+                                                    >
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center font-bold">
+                                                            {friend.displayName[0].toUpperCase()}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium">{friend.displayName}</p>
+                                                            <p className="text-gray-400 text-sm">@{friend.username}</p>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => removeFriend(friendId)}
+                                                        className="p-2 rounded-lg bg-red-500/20 text-red-400"
+                                                    >
+                                                        <UserMinus />
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Friend Activity */}
+                            {friendActivity.length > 0 && (
+                                <div>
+                                    <h2 className="text-lg font-semibold mb-3">Friend Activity</h2>
+                                    <div className="space-y-3">
+                                        {friendActivity.slice(0, 10).map((activity, idx) => (
+                                            <div
+                                                key={idx}
+                                                className="card-gradient rounded-xl p-4 border border-pink-500/20"
+                                            >
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center text-sm font-bold">
+                                                        {activity.friend.displayName[0].toUpperCase()}
+                                                    </div>
+                                                    <span className="font-medium">{activity.friend.displayName}</span>
+                                                    <span className="text-gray-400">rated</span>
+                                                </div>
+                                                <div className="flex gap-3">
+                                                    <img
+                                                        src={activity.album.cover}
+                                                        alt={activity.album.name}
+                                                        className="w-12 h-12 rounded-lg object-cover"
+                                                        onError={(e) => { e.target.src = "https://via.placeholder.com/48?text=Album"; }}
+                                                    />
+                                                    <div className="flex-1">
+                                                        <p className="font-medium text-sm">{activity.album.name}</p>
+                                                        <p className="text-pink-400 text-xs">{activity.album.artist}</p>
+                                                    </div>
+                                                    <RatingDisplay rating={activity.rating} />
+                                                </div>
+                                                {activity.comment && (
+                                                    <p className="mt-2 text-gray-300 text-sm">"{activity.comment}"</p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Bottom Nav */}
+                        <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
+                    </div>
+                );
+            }
+
+            // Profile Page
+            if (currentPage === "profile") {
+                const userRatings = ratings[currentUser.id] || {};
+                const ratedAlbums = Object.entries(userRatings)
+                    .map(([albumId, data]) => {
+                        const album = ALBUM_DATABASE.find(a => a.id === parseInt(albumId));
+                        const avgRating = getAlbumRating(currentUser.id, parseInt(albumId));
+                        return { album, data, avgRating };
+                    })
+                    .filter(r => r.album && r.avgRating !== null)
+                    .sort((a, b) => (b.data.timestamp || 0) - (a.data.timestamp || 0));
+
+                return (
+                    <div className="min-h-screen music-bg text-white pb-24">
+                        {/* Header */}
+                        <div className="p-4 sticky top-0 z-20" style={{ background: "linear-gradient(135deg, #16213e 0%, #1a1a2e 100%)" }}>
+                            <div className="flex items-center justify-between">
+                                <h1 className="text-2xl font-bold">Profile</h1>
+                                <button
+                                    onClick={handleLogout}
+                                    className="p-2 rounded-lg bg-red-500/20 text-red-400"
+                                >
+                                    <LogOut />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="p-4 max-w-2xl mx-auto">
+                            {/* User Info */}
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="w-20 h-20 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center text-3xl font-bold">
+                                    {currentUser.displayName[0].toUpperCase()}
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-bold">{currentUser.displayName}</h2>
+                                    <p className="text-gray-400">@{currentUser.username}</p>
+                                </div>
+                            </div>
+
+                            {/* Stats */}
+                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                <div className="card-gradient rounded-xl p-4 text-center border border-pink-500/20">
+                                    <p className="text-3xl font-bold text-pink-400">{ratedAlbums.length}</p>
+                                    <p className="text-gray-400 text-sm">Albums Rated</p>
+                                </div>
+                                <div className="card-gradient rounded-xl p-4 text-center border border-pink-500/20">
+                                    <p className="text-3xl font-bold text-pink-400">{(friends[currentUser.id] || []).length}</p>
+                                    <p className="text-gray-400 text-sm">Friends</p>
+                                </div>
+                            </div>
+
+                            {/* Rated Albums */}
+                            <h2 className="text-xl font-semibold mb-4">Your Ratings</h2>
+                            {ratedAlbums.length === 0 ? (
+                                <p className="text-gray-400 text-center py-8">No albums rated yet. Start rating!</p>
+                            ) : (
+                                <div className="space-y-3">
+                                    {ratedAlbums.map(({ album, data, avgRating }) => (
+                                        <div
+                                            key={album.id}
+                                            onClick={() => {
+                                                setSelectedAlbum(album);
+                                                setCurrentPage("album");
+                                            }}
+                                            className="card-gradient rounded-xl p-4 border border-pink-500/20 cursor-pointer hover:border-pink-500/50 transition-colors"
+                                        >
+                                            <div className="flex gap-4">
+                                                <img
+                                                    src={album.cover}
+                                                    alt={album.name}
+                                                    className="w-16 h-16 rounded-lg object-cover"
+                                                    onError={(e) => { e.target.src = "https://via.placeholder.com/64?text=Album"; }}
+                                                />
+                                                <div className="flex-1">
+                                                    <h3 className="font-semibold">{album.name}</h3>
+                                                    <p className="text-pink-400 text-sm">{album.artist}</p>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <RatingDisplay rating={avgRating} />
+                                                        <span className="text-gray-400 text-sm">
+                                                            ({Object.keys(data.songs || {}).length} songs)
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {data.albumComment && (
+                                                <p className="mt-2 text-gray-300 text-sm">"{data.albumComment}"</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Bottom Nav */}
+                        <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
+                    </div>
+                );
+            }
+
+            // Home Page (Album List)
+            return (
+                <div className="min-h-screen music-bg text-white pb-24">
+                    {/* Header */}
+                    <div className="p-4 sticky top-0 z-20" style={{ background: "linear-gradient(135deg, #16213e 0%, #1a1a2e 100%)" }}>
+                        <div className="flex items-center gap-3 mb-4">
+                            <Music />
+                            <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+                                RateMyMusic
+                            </h1>
+                        </div>
+
+                        {/* Search */}
+                        <div className="relative">
+                            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-pink-500">
+                                <Search />
+                            </div>
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search albums or artists..."
+                                className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-pink-500/30 focus:outline-none focus:border-pink-500 text-white"
+                            />
+                        </div>
                     </div>
 
-                    {/* Custom Recipes List */}
-                    <div className="space-y-4">
-                      <h2 className="text-xl font-semibold text-white">Your Custom Recipes</h2>
-                      {customRecipes.length === 0 ? (
-                        <p className="text-gray-400 text-center py-8">No custom recipes yet. Add your first recipe above!</p>
-                      ) : (
-                        customRecipes.map((recipe, idx) => (
-                          <div
-                            key={idx}
-                            className="wood-card rounded-2xl p-6 shadow-xl border-2"
-                            style={{borderColor: '#CC5500'}}
-                          >
-                            <div className="flex items-start justify-between mb-3">
-                              <h3 className="text-2xl font-bold text-white">{recipe.name}</h3>
-                              <button
-                                onClick={() => deleteCustomRecipe(idx)}
-                                className="bg-red-600 hover:bg-red-700 rounded-full p-2 transition-colors"
-                              >
-                                <X />
-                              </button>
-                            </div>
+                    {/* Album Grid */}
+                    <div className="p-4 max-w-2xl mx-auto">
+                        <h2 className="text-xl font-semibold mb-4">Albums</h2>
+                        <div className="grid grid-cols-2 gap-4">
+                            {filteredAlbums.map(album => {
+                                const userRating = getAlbumRating(currentUser.id, album.id);
+                                return (
+                                    <div
+                                        key={album.id}
+                                        onClick={() => {
+                                            setSelectedAlbum(album);
+                                            setCurrentPage("album");
+                                        }}
+                                        className="card-gradient rounded-xl overflow-hidden border border-pink-500/20 cursor-pointer hover:border-pink-500/50 transition-all hover:scale-105"
+                                    >
+                                        <img
+                                            src={album.cover}
+                                            alt={album.name}
+                                            className="w-full aspect-square object-cover"
+                                            onError={(e) => { e.target.src = "https://via.placeholder.com/200?text=Album"; }}
+                                        />
+                                        <div className="p-3">
+                                            <h3 className="font-semibold text-sm truncate">{album.name}</h3>
+                                            <p className="text-pink-400 text-xs truncate">{album.artist}</p>
+                                            <p className="text-gray-400 text-xs">{album.year}</p>
+                                            {userRating !== null && (
+                                                <div className="mt-1">
+                                                    <RatingDisplay rating={userRating} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
 
-                            <div className="mb-3">
-                              <p className="text-sm font-semibold mb-1 text-white">Ingredients:</p>
-                              <p className="text-sm text-gray-300">{recipe.ingredients.join(', ')}</p>
-                            </div>
-
-                            <div>
-                              <p className="text-sm font-semibold mb-1 text-white">Instructions:</p>
-                              <p className="text-sm text-gray-300">{recipe.instructions}</p>
-                            </div>
-                          </div>
-                        ))
-                      )}
+                        {filteredAlbums.length === 0 && (
+                            <p className="text-gray-400 text-center py-8">No albums found</p>
+                        )}
                     </div>
-                  </>
-                )}
-              </div>
-            </div>
-          );
+
+                    {/* Bottom Nav */}
+                    <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
+                </div>
+            );
         }
 
         // Render the app
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<CocktailApp />);
+        root.render(<MusicRatingApp />);
     </script>
 </body>
 </html>
